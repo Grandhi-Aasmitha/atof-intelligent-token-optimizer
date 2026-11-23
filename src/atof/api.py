@@ -3,11 +3,11 @@ from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 
-app=FastAPI(title='ATOF Phase 1',version='0.1.0')
+app=FastAPI(title='ATOF Phase 2',version='0.2.0')
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':1}
+    return {'status':'ok','phase':2}
 
 @app.get('/v1/features')
 def features():
@@ -22,3 +22,10 @@ def analyze_request(payload:OptimizeRequest):
 @app.post('/v1/optimize',response_model=OptimizeResponse)
 def optimize_request(payload:OptimizeRequest):
     return optimize(payload)
+
+@app.get('/v1/engines')
+def engines():
+    from .engines.registry import EngineRegistry
+    supported = EngineRegistry().capabilities()
+    return {'count':len(supported),'engines':[vars(item) for item in supported],
+            'external_token_optimizer':'not_installed_license_review_required'}
