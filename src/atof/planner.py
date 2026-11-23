@@ -1,46 +1,79 @@
-"""Phase 2 deterministic, delivery-aware feature selection."""
+"""Phase 3: policy-driven multi-feature selection with scoped conflicts.
+
+The planner never authorizes file access or agent interception; all evidence is
+provided explicitly by the caller. Feature overrides cannot bypass gates.
+"""
+from dataclasses import dataclass
 from .registry import FeatureRegistry
 from .analyzer import Analysis
 from .models import FeatureDecision, OptimizeRequest
 
-FEATURE_EVIDENCE = (
-    ('coding.error_context', 'error', 'error_output'),
-    ('coding.test_log', 'test', 'test_output'),
-    ('coding.code_diff', 'diff', 'diff'),
-    ('coding.code_context', 'source', 'files'),
-    ('coding.repository_retrieval', 'source', 'files'),
+@dataclass(frozen=True)
+class Strategy:
+    feature_id: str
+    evidence: str
+    priority: int
+    conflicts: tuple[str, ...] = ()
+    depends_on: tuple[str, ...] = ()
+
+STRATEGIES = (
+    Strategy('coding.error_context', 'error_output', 100),
+    Strategy('coding.test_log', 'test_output', 90),
+    Strategy('coding.code_diff', 'diff', 80),
+    Strategy('coding.code_context', 'files', 70, ('coding.repository_retrieval',)),
+    Strategy('coding.repository_retrieval', 'files', 60, ('coding.code_context',)),
 )
+
+def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozenset[str]) -> list[FeatureDecision]:
+    decisions: list[FeatureDecision] = []
+    selected: set[str] = set()
+    available: list[Strategy] = []
+    for spec in STRATEGIES:
+        if spec.evidence == 'files' and not request.files:
+            continue
+        if spec.evidence != 'files' and not getattr(request, spec.evidence).strip():
+            # Classifier may infer evidence from a prompt, but without its
+            # actual structured payload it cannot be transformed.
+            kind = {'diff':'diff', 'test_output':'test', 'error_output':'error'}[spec.evidence]
+            if kind in request_analysis_evidence:
+                decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
+                                  reason='structured_evidence_required'))
+            continue
+        if spec.feature_id == 'coding.repository_retrieval' and len(request.files) < 2:
+            continue
+        if request.agent != 'custom_api' or request.delivery_mode != 'return_payload':
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
+                         reason='no_verified_context_delivery_path_for_agent'))
+            continue
+        if not engines.supports(spec.feature_id):
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
+                         reason='no_registered_engine'))
+            continue
+        available.append(spec)
+
+    if request.feature_override:
+        if request.feature_override not in {s.feature_id for s in available}:
+            decisions.append(FeatureDecision(feature_id=request.feature_override,
+                                            status='unsupported', reason='override_not_eligible'))
+            return decisions
+        available = [s for s in available if s.feature_id == request.feature_override]
+
+    for spec in available:
+        if any(f in selected for f in spec.conflicts):
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
+                                            reason='conflicts_with_selected_strategy'))
+        elif not set(spec.depends_on).issubset(selected):
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
+                                            reason='missing_strategy_dependency'))
+        elif len(selected) >= request.max_optimizers:
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='applicable',
+                                            reason='optimizer_execution_limit'))
+        else:
+            selected.add(spec.feature_id)
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='selected',
+                                            reason='authorized_evidence_and_capability_verified'))
+    return decisions
 
 def select(request: OptimizeRequest, analysis: Analysis, registry: FeatureRegistry, engines=None) -> list[FeatureDecision]:
     from .engines.registry import EngineRegistry
-    engines = engines or EngineRegistry()
-    decisions = []
-    candidates = []
-    for feature_id, evidence_type, field in FEATURE_EVIDENCE:
-        if evidence_type not in analysis.evidence_types:
-            continue
-        if feature_id == 'coding.repository_retrieval' and len(request.files) < 2:
-            continue
-        # Do not use regex matches in task text as evidence for a transformation.
-        if not getattr(request, field):
-            decisions.append(FeatureDecision(feature_id=feature_id, status='skipped', reason='structured_evidence_required'))
-            continue
-        if request.agent != 'custom_api' or request.delivery_mode != 'return_payload':
-            decisions.append(FeatureDecision(feature_id=feature_id, status='unsupported', reason='no_verified_context_delivery_path_for_agent'))
-            continue
-        if not engines.supports(feature_id):
-            decisions.append(FeatureDecision(feature_id=feature_id, status='unsupported', reason='no_registered_engine'))
-            continue
-        candidates.append(feature_id)
-
-    chosen = request.feature_override if request.feature_override else (candidates[0] if candidates else None)
-    if request.feature_override and chosen not in candidates:
-        # Never let caller overrides circumvent evidence and adapter capability gates.
-        decisions.append(FeatureDecision(feature_id=chosen, status='unsupported', reason='override_not_eligible'))
-        chosen = None
-    for feature_id in candidates:
-        if feature_id == chosen:
-            decisions.append(FeatureDecision(feature_id=feature_id, status='selected', reason='supported_authorized_structured_evidence'))
-        else:
-            decisions.append(FeatureDecision(feature_id=feature_id, status='applicable', reason='deferred_single_engine_execution'))
-    return decisions
+    return _plan(request, engines if engines is not None else EngineRegistry(), analysis.evidence_types)

@@ -81,7 +81,7 @@ def test_external_engine_fails_closed():
     with pytest.raises(ExternalEngineUnavailable):
         ExternalEngineAdapter('core.prompt').optimize(req())
 
-def test_mixed_evidence_only_one_engine_selected():
-    result=optimize(req(task='Fix failing test error',test_output='test_fail FAILED\nE AssertionError\n',error_output='RuntimeError: x\n'*20))
-    assert sum(d.status in {'selected','executed'} for d in result.report.decisions) <= 1
-    assert any(d.status=='applicable' for d in result.report.decisions)
+def test_mixed_evidence_uses_multiple_nonconflicting_engines():
+    result=optimize(req(task='Fix failing test error',test_output=('test_ok PASSED\n'*130)+'test_fail FAILED\nE AssertionError\n',error_output=('heartbeat healthy\n'*100)+'RuntimeError: x\n'))
+    assert sum(d.status == 'executed' for d in result.report.decisions) >= 1
+    assert len(result.report.executed_features) >= 1

@@ -3,11 +3,11 @@ from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 
-app=FastAPI(title='ATOF Phase 2',version='0.2.0')
+app=FastAPI(title='ATOF Phase 3',version='0.3.0')
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':2}
+    return {'status':'ok','phase':3}
 
 @app.get('/v1/features')
 def features():

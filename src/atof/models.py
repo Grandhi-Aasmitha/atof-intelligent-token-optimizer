@@ -13,6 +13,7 @@ class OptimizeRequest(BaseModel):
     test_output: str = Field(default="", max_length=500_000)
     error_output: str = Field(default="", max_length=500_000)
     feature_override: str | None = None
+    max_optimizers: int = Field(default=4, ge=1, le=5)
     agent: Literal["custom_api", "codex", "copilot", "claude"] = "custom_api"
     token_budget: int = Field(default=1600, ge=64, le=200_000)
     execute: bool = True
@@ -46,6 +47,9 @@ class OptimizationReport(BaseModel):
     warnings: list[str] = Field(default_factory=list)
     engine: str | None = None
     executed_feature: str | None = None
+    executed_features: list[str] = Field(default_factory=list)
+    stage_results: list[dict[str, str | int | None]] = Field(default_factory=list)
+    original_context_estimated_tokens: int | None = None
 
 class OptimizeResponse(BaseModel):
     optimized_context: str | None = None
