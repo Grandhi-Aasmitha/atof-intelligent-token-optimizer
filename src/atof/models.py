@@ -50,6 +50,12 @@ class OptimizationReport(BaseModel):
     executed_features: list[str] = Field(default_factory=list)
     stage_results: list[dict[str, str | int | None]] = Field(default_factory=list)
     original_context_estimated_tokens: int | None = None
+    estimated_reduction_percent: float | None = None
+    measurement_method: str = "local_heuristic_estimate"
+    provider_usage: dict | None = None
+    fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
+    fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
+    execution_duration_ms: float | None = None
 
 class OptimizeResponse(BaseModel):
     optimized_context: str | None = None

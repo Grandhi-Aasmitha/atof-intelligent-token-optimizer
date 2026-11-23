@@ -3,7 +3,9 @@
 Safe default: retain the original evidence section on failure, no reduction or
 cross-feature conflict. The returned result is only an API payload candidate.
 """
-from dataclasses import dataclass
+from time import perf_counter
+from .fidelity import validate_stage
+from .measurement import compare_context
 from .legacy.tokens import estimate_text
 from .models import OptimizeRequest, OptimizationReport, FeatureDecision
 from .engines.registry import EngineRegistry
@@ -43,8 +45,10 @@ def compose(parts: dict[str,str]) -> str:
 def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
                  report: OptimizationReport, engines: EngineRegistry):
     from .models import OptimizeResponse
+    started = perf_counter()
     original = source_sections(request)
     if not original:
+        report.execution_duration_ms = round((perf_counter()-started)*1000, 3)
         return OptimizeResponse(report=report)
     baseline = compose(original)
     before = estimate_text(baseline)
@@ -55,6 +59,7 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
             if decision.status == 'selected':
                 decision.status='applicable'
                 decision.reason='dry_run_only'
+        report.execution_duration_ms = round((perf_counter()-started)*1000, 3)
         return OptimizeResponse(report=report)
     staged = dict(original)
     used_slots = set()
@@ -81,6 +86,15 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
             if not safe:
                 decision.status, decision.reason = 'skipped', 'not_smaller_or_unresolved_dependencies'
                 continue
+            fidelity = validate_stage(decision.feature_id, original[slot], result.content, request.task)
+            report.fidelity_checks.append({'feature_id':decision.feature_id,
+                'passed':fidelity.passed, 'reason':fidelity.reason,
+                'anchors_checked':fidelity.anchors_checked,
+                'anchors_preserved':fidelity.anchors_preserved})
+            if not fidelity.passed:
+                decision.status, decision.reason = 'skipped', 'fidelity_' + fidelity.reason
+                report.fidelity_status = 'rejected'
+                continue
             # Verify using the same estimator for both sides, not arbitrary
             # engine-specific token estimates. Preserve original when larger.
             trial = dict(staged)
@@ -104,6 +118,7 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
                                          'estimated_before':decision.estimated_before,
                                          'estimated_after':decision.estimated_after})
     if not report.executed_features:
+        report.execution_duration_ms = round((perf_counter()-started)*1000, 3)
         return OptimizeResponse(report=report)
     payload = compose(staged)
     after = estimate_text(payload)
@@ -116,9 +131,14 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
         report.executed_feature=None
         report.engine=None
         report.stage_results=[]
+        report.execution_duration_ms = round((perf_counter()-started)*1000, 3)
         return OptimizeResponse(report=report)
     report.optimized_estimated_tokens=after
     report.estimated_reduction_tokens=before-after
+    report.estimated_reduction_percent=compare_context(baseline,payload).reduction_percent
+    if report.fidelity_status != 'rejected':
+        report.fidelity_status='passed'
+    report.execution_duration_ms = round((perf_counter()-started)*1000, 3)
     report.delivery_status='payload_returned_to_client'
     report.warnings.append('Model delivery and provider token savings are unverified')
     return OptimizeResponse(optimized_context=payload,report=report)
