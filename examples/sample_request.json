@@ -1,0 +1,10 @@
+{
+  "task": "Explain calculate_total and directly required dependencies",
+  "files": [
+    {
+      "path": "order_service.py",
+      "content": "def calculate_subtotal(items):\n    return sum(i[\"price\"] * i[\"quantity\"] for i in items)\n\ndef calculate_total(items, tax=0.18):\n    subtotal = calculate_subtotal(items)\n    return round(subtotal * (1 + tax), 2)\n\ndef unrelated_0(): return 0\ndef unrelated_1(): return 1\ndef unrelated_2(): return 2\ndef unrelated_3(): return 3\ndef unrelated_4(): return 4\ndef unrelated_5(): return 5\ndef unrelated_6(): return 6\ndef unrelated_7(): return 7\ndef unrelated_8(): return 8\ndef unrelated_9(): return 9\ndef unrelated_10(): return 10\ndef unrelated_11(): return 11\ndef unrelated_12(): return 12\ndef unrelated_13(): return 13\ndef unrelated_14(): return 14\ndef unrelated_15(): return 15\ndef unrelated_16(): return 16\ndef unrelated_17(): return 17\ndef unrelated_18(): return 18\ndef unrelated_19(): return 19\ndef unrelated_20(): return 20\ndef unrelated_21(): return 21\ndef unrelated_22(): return 22\ndef unrelated_23(): return 23\ndef unrelated_24(): return 24\ndef unrelated_25(): return 25\ndef unrelated_26(): return 26\ndef unrelated_27(): return 27\ndef unrelated_28(): return 28\ndef unrelated_29(): return 29\ndef unrelated_30(): return 30\ndef unrelated_31(): return 31\ndef unrelated_32(): return 32\ndef unrelated_33(): return 33\ndef unrelated_34(): return 34\ndef unrelated_35(): return 35\ndef unrelated_36(): return 36\ndef unrelated_37(): return 37\ndef unrelated_38(): return 38\ndef unrelated_39(): return 39\ndef unrelated_40(): return 40\ndef unrelated_41(): return 41\ndef unrelated_42(): return 42\ndef unrelated_43(): return 43\ndef unrelated_44(): return 44\ndef unrelated_45(): return 45\ndef unrelated_46(): return 46\ndef unrelated_47(): return 47\ndef unrelated_48(): return 48\ndef unrelated_49(): return 49\n"
+    }
+  ],
+  "agent": "custom_api"
+}
