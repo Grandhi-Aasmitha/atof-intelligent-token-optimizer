@@ -27,6 +27,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;b
 <p id="duration" class="muted">Processing time: —</p><p id="delivery" class="muted">Delivery: —</p>
 <p class="muted">Provider-verified savings: <b>Unavailable</b></p><h2>Applicable features and results</h2><div id="features"></div></section></div>
 <div class="metrics"><div class="metric"><small>Recorded requests</small><strong id="count">—</strong></div><div class="metric"><small>Candidates returned</small><strong id="candidates">—</strong></div><div class="metric"><small>Estimated tokens removed</small><strong id="saved">—</strong></div><div class="metric"><small>Estimated reduction (weighted)</small><strong id="rate">—</strong></div></div>
+<section><h2>Provider ON/OFF benchmark comparison</h2>
+<p class="muted">Paste JSON from the benchmark CLI; your browser displays the comparison without storing it. This is not causal savings proof.</p>
+<label for="benchmark-json">Benchmark JSON</label><textarea id="benchmark-json" placeholder="Paste benchmark CLI output"></textarea><button id="benchmark-view">Compare before / after</button><p class="muted" id="benchmark-result" role="status">No benchmark loaded.</p></section>
 <section><h2>Recent optimization results</h2><p class="muted" id="storage"></p><button id="refresh">Refresh history</button><table><thead><tr><th>Timestamp UTC</th><th>Agent</th><th>Intent</th><th>Applicable features</th><th>Estimate before → after</th><th>Delivery</th></tr></thead><tbody id="rows"><tr><td colspan="6">No stored results</td></tr></tbody></table></section>
 </main><script>
 const $=id=>document.getElementById(id),num=x=>x===null||x===undefined?'—':Number(x).toLocaleString();
@@ -47,6 +50,15 @@ $('count').textContent=num(s.total_requests);$('candidates').textContent=num(s.c
 $('storage').textContent=s.enabled?'Local metadata only; no prompt or evidence stored.':'Analytics disabled; set ATOF_ANALYTICS_ENABLED=1 before starting the server.';
 $('rows').innerHTML=h.records.map(r=>'<tr><td>'+safe(r.timestamp_utc.slice(0,19))+'</td><td>'+safe(r.agent)+'</td><td>'+safe(r.intent)+'</td><td>'+r.features.map(f=>'<span class="chip">'+safe(f.id)+' '+safe(f.status)+'</span>').join('')+'</td><td>'+num(r.before_estimate)+' → '+num(r.after_estimate)+'</td><td>'+safe(r.delivery_status)+'</td></tr>').join('')||'<tr><td colspan="6">No stored results</td></tr>';
 }catch(e){$('storage').textContent='Unable to fetch analytics: '+e.message}}
+$('benchmark-view').onclick=()=>{try{
+ const r=JSON.parse($('benchmark-json').value),a=r.baseline,b=r.optimized;
+ if(r.status!=='completed'||!a||!b||!Number.isFinite(a.input_tokens)||!Number.isFinite(b.input_tokens))throw Error('Invalid benchmark');
+ const measured=r.provider_usage_measured===true;
+ $('benchmark-result').textContent=(measured?'Provider receipts':'Synthetic estimates')+
+ ' | Model: '+(r.model||'unknown')+' | Input before: '+num(a.input_tokens)+' | After: '+num(b.input_tokens)+
+ ' | Observed difference: '+(measured?num(a.input_tokens-b.input_tokens):'N/A')+
+ ' | Required term check: '+(r.quality_gate_passed?'passed':'failed')+' | Causal savings UNVERIFIED';
+}catch(e){$('benchmark-result').textContent='Benchmark error: '+e.message}};
 $('fixture').onclick=()=>{$('error').value=('heartbeat ok\n').repeat(140)+'RuntimeError: synthetic database connection failed\n'};
 $('optimize').onclick=()=>run(true);$('analyze').onclick=()=>run(false);$('refresh').onclick=refresh;refresh();
 </script></body></html>

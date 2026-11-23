@@ -64,7 +64,7 @@ def test_history_endpoints(monkeypatch,tmp_path):
     result=client.post('/v1/optimize',json={'task':'Analyze error',
       'error_output':'heartbeat ok\n'*140+'RuntimeError: failure'})
     assert result.status_code==200
-    assert client.get('/health').json()['phase']==6
+    assert client.get('/health').json()['phase']>=6
     assert len(client.get('/v1/analytics/history').json()['records'])==1
     assert client.get('/v1/analytics/summary').json()['candidate_requests']==1
     assert client.get('/v1/analytics/history?limit=bad').status_code==422

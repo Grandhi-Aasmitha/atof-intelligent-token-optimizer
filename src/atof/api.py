@@ -3,11 +3,11 @@ from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 
-app=FastAPI(title='ATOF Phase 6',version='0.6.0')
+app=FastAPI(title='ATOF Phase 8',version='0.8.0')
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':6}
+    return {'status':'ok','phase':8}
 
 @app.get('/v1/features')
 def features():
@@ -59,3 +59,10 @@ def dashboard_history(limit:int=50):
 @app.get('/v1/analytics/summary')
 def dashboard_summary(limit:int=200):
     return analytics_summary(limit)
+
+# Phase 7: explicit user-selected text, not automatic interception.
+from .ide import IDERequest, optimize_selection
+
+@app.post('/v1/ide/optimize', response_model=OptimizeResponse)
+def ide_optimize(request: IDERequest):
+    return optimize_selection(request)

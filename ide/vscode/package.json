@@ -1,0 +1,51 @@
+{
+  "name": "atof-selection-optimizer",
+  "displayName": "ATOF Selection Optimizer",
+  "description": "Explicit local optimization of selected code and diagnostic text",
+  "version": "0.7.0",
+  "publisher": "atof-local",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "atof.optimizeSelection",
+        "title": "ATOF: Optimize Selection"
+      },
+      {
+        "command": "atof.openDashboard",
+        "title": "ATOF: Open Dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "ATOF",
+      "properties": {
+        "atof.apiUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080"
+        },
+        "atof.tokenBudget": {
+          "type": "integer",
+          "default": 1600,
+          "minimum": 64
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "atof.optimizeSelection",
+          "when": "editorHasSelection",
+          "group": "navigation@50"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "check": "node --check extension.js"
+  },
+  "license": "UNLICENSED"
+}
