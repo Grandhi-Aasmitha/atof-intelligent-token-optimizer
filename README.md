@@ -1,41 +1,29 @@
-# ATOF Next Generation — Phase 5 (Multi-Agent MCP)
+# ATOF Next Generation — Phase 6
 
-**Purpose:** One extensible ATOF optimization platform with explicit MCP tools callable from GitHub Copilot, Codex, and Claude Code. The existing Phase 1–4 API and native optimization engines are preserved.
+Local multi-agent-aware token optimization analytics dashboard on top of the 48-feature catalog, five native engines, and explicit MCP integrations.
 
-## Current features
+**Open:** http://127.0.0.1:8080/dashboard after starting the FastAPI server.
 
-- 48 registered feature IDs; 5 native coding engines currently executable.
-- Dynamic applicable-feature analysis, conflict-aware composition, fidelity checks, and honest estimated reductions.
-- **3 MCP tools:** `atof_capabilities`, `atof_analyze`, `atof_optimize`.
-- Local stdio MCP server with agent startup profiles: `copilot`, `codex`, `claude`.
-- VS Code MCP config generator and local smoke-test command.
-- No automatic repository reads, agent interception, or provider savings claims.
-
-## Quick start (Windows PowerShell)
-
-Run from repository root with `pyproject.toml`:
+### Windows setup on the existing branch
 
 ```powershell
 git switch feature/phase-1-foundation
 git pull origin feature/phase-1-foundation
-py -3.11 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 & .\.venv\Scripts\python.exe -m pytest -q
-& .\.venv\Scripts\python.exe -m atof.mcp_smoke --agent all
-```
-
-Optional HTTP API:
-
-```powershell
+$env:ATOF_ANALYTICS_ENABLED = "1"
 & .\.venv\Scripts\python.exe -m uvicorn atof.api:app --host 127.0.0.1 --port 8080
 ```
 
-Swagger: http://127.0.0.1:8080/docs. Agent profiles: `GET /v1/agents/capabilities`.
+Use the dashboard's **Use synthetic fixture → Analyze → Optimize** flow. Metrics are **local estimates**, not provider-verified savings. Agent selection does not switch the active IDE model, or intercept Copilot/Claude/Codex requests. Their explicit MCP tools from Phase 5 are unaffected.
 
-## Connect your coding agent
+### Endpoints
 
-**See [docs/PHASE5_DESIGN.md](docs/PHASE5_DESIGN.md)** for installation and testing with VS Code Copilot, Codex and Claude Code. In particular, use `python -m atof.mcp_setup` to register Copilot in an approved VS Code workspace.
+- `GET /dashboard` — responsive web dashboard
+- `GET /v1/analytics/summary` — aggregate candidate reductions and feature status
+- `GET /v1/analytics/history` — metadata-only local history
+- Existing `/v1/optimize`, `/v1/analyze`, `/v1/agents/capabilities`, `/health` and MCP tools remain
 
-## Status and limitations
+**Security:** Bind only to `127.0.0.1`; there is no API authentication. Persistence disabled by default and opt-in with `ATOF_ANALYTICS_ENABLED=1`. No raw prompt/log/source is stored in analytics. External Token Optimizer code is not bundled due to licensing/integration considerations.
 
-`mcp_tool_result_returned` means the MCP server returned an optimization candidate **as a tool result**, not that an LLM consumed it. Provider-token savings remain unverified. The third-party `alexgreensh/token-optimizer` code is **not bundled**; its license and integration interface need separate review. Automatic agent context replacement is not implemented.
+See `docs/PHASE6_DESIGN.md` for test cases and remaining limitations.

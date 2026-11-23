@@ -1,0 +1,52 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATOF · Token Analytics</title>
+<style>
+:root{font-family:system-ui,Segoe UI,sans-serif;color:#1a3049;background:#f4f7fb}*{box-sizing:border-box}
+body{margin:0}header{background:#132b4a;color:#fff;padding:22px 5%}h1{margin:0;font-size:24px}h2{font-size:17px}
+main{max-width:1200px;margin:auto;padding:22px}section{background:white;padding:20px;border:1px solid #dde6ef;border-radius:12px;margin:16px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{border:1px solid #e2e8f0;padding:16px;border-radius:10px}.metric strong{display:block;font-size:26px;margin-top:8px}
+label{display:block;margin:12px 0 5px;font-weight:600;font-size:14px}textarea,input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #aebfd1;font:inherit}
+textarea{height:115px}button{border:0;background:#2763b6;color:white;padding:10px 17px;border-radius:7px;cursor:pointer;margin:10px 6px 5px 0}
+.warning{background:#fff2db;color:#81510b;padding:14px;border-radius:8px}
+.muted{font-size:12px;color:#66758c}.chip{display:inline-block;background:#eaf1fc;color:#224971;border-radius:14px;padding:5px 10px;margin:3px;font-size:12px}
+.track{background:#ebf0f6;height:16px;border-radius:10px;overflow:hidden}.bar{height:100%;background:#2563b8}.bar.after{background:#169877}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;border-bottom:1px solid #e8eef6;padding:10px}table{display:block;overflow:auto}
+@media(max-width:850px){.grid,.metrics{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid,.metrics{grid-template-columns:1fr}}
+</style></head><body><header><h1>ATOF · Optimization Analytics</h1><div>Phase 6 · Local dashboard · Agent-aware diagnostics</div></header>
+<main><div class="warning"><b>Measurement boundary:</b> Shown token counts are local estimates, not provider-measured savings. Selecting an agent does not switch your IDE assistant or transparently intercept its model requests. Codex, Copilot and Claude need explicit MCP integration.</div>
+<div class="grid"><section><h2>Test a request</h2>
+<label for="agent">Agent</label><select id="agent"><option value="custom_api">ATOF custom API — can optimize</option><option value="copilot">Copilot — observe-only via HTTP</option><option value="codex">Codex — observe-only via HTTP</option><option value="claude">Claude Code — observe-only via HTTP</option></select>
+<label for="task">Prompt/task</label><input id="task" value="Investigate repeated RuntimeError">
+<label for="error">Permitted test log</label><textarea id="error">heartbeat ok&#10;heartbeat ok&#10;RuntimeError: synthetic error</textarea>
+<button id="fixture">Use synthetic fixture</button><button id="analyze">Analyze</button><button id="optimize">Optimize</button>
+<p id="status" class="muted" role="status"></p></section>
+<section><h2>Latest request · estimated before / after</h2>
+<div class="grid"><div><span class="muted">Original tokens</span><div class="metric"><strong id="before">—</strong></div><div class="track"><div class="bar" style="width:100%"></div></div></div>
+<div><span class="muted">Optimized tokens</span><div class="metric"><strong id="after">—</strong></div><div class="track"><div class="bar after" id="afterbar"></div></div></div></div>
+<div class="grid"><div class="metric"><small>Estimated tokens removed</small><strong id="removed">—</strong></div><div class="metric"><small>Estimated reduction</small><strong id="percent">—</strong></div></div>
+<p id="duration" class="muted">Processing time: —</p><p id="delivery" class="muted">Delivery: —</p>
+<p class="muted">Provider-verified savings: <b>Unavailable</b></p><h2>Applicable features and results</h2><div id="features"></div></section></div>
+<div class="metrics"><div class="metric"><small>Recorded requests</small><strong id="count">—</strong></div><div class="metric"><small>Candidates returned</small><strong id="candidates">—</strong></div><div class="metric"><small>Estimated tokens removed</small><strong id="saved">—</strong></div><div class="metric"><small>Estimated reduction (weighted)</small><strong id="rate">—</strong></div></div>
+<section><h2>Recent optimization results</h2><p class="muted" id="storage"></p><button id="refresh">Refresh history</button><table><thead><tr><th>Timestamp UTC</th><th>Agent</th><th>Intent</th><th>Applicable features</th><th>Estimate before → after</th><th>Delivery</th></tr></thead><tbody id="rows"><tr><td colspan="6">No stored results</td></tr></tbody></table></section>
+</main><script>
+const $=id=>document.getElementById(id),num=x=>x===null||x===undefined?'—':Number(x).toLocaleString();
+const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function j(url,options){const r=await fetch(url,options);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function run(execute){$('status').textContent='Working…';try{
+const data=await j(execute?'/v1/optimize':'/v1/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({task:$('task').value,agent:$('agent').value,error_output:$('error').value,execute})});
+const r=data.report;$('before').textContent=num(r.original_estimated_tokens);$('after').textContent=num(r.optimized_estimated_tokens);
+$('removed').textContent=num(r.estimated_reduction_tokens);$('percent').textContent=r.estimated_reduction_percent==null?'—':r.estimated_reduction_percent+'%';
+$('afterbar').style.width=r.optimized_estimated_tokens!=null&&r.original_estimated_tokens?Math.min(100,100*r.optimized_estimated_tokens/r.original_estimated_tokens)+'%':'0%';
+$('duration').textContent='Processing time: '+num(r.execution_duration_ms)+' ms';$('delivery').textContent='Delivery: '+r.delivery_status+' (model consumption unverified)';
+$('features').innerHTML=r.decisions.map(d=>'<span class="chip">'+safe(d.feature_id)+' · '+safe(d.status)+' ('+safe(d.reason)+')</span>').join('')||'No applicable features';
+$('status').textContent=data.optimized_context?'Candidate returned; provider tokens saved unknown.':execute?'No reducing candidate returned.':'Analysis complete; no execution.';
+await refresh();}catch(e){$('status').textContent='Error: '+e.message}}
+async function refresh(){try{const [s,h]=await Promise.all([j('/v1/analytics/summary'),j('/v1/analytics/history')]);
+$('count').textContent=num(s.total_requests);$('candidates').textContent=num(s.candidate_requests);$('saved').textContent=num(s.estimated_tokens_removed);$('rate').textContent=s.estimated_reduction_percent==null?'—':s.estimated_reduction_percent+'%';
+$('storage').textContent=s.enabled?'Local metadata only; no prompt or evidence stored.':'Analytics disabled; set ATOF_ANALYTICS_ENABLED=1 before starting the server.';
+$('rows').innerHTML=h.records.map(r=>'<tr><td>'+safe(r.timestamp_utc.slice(0,19))+'</td><td>'+safe(r.agent)+'</td><td>'+safe(r.intent)+'</td><td>'+r.features.map(f=>'<span class="chip">'+safe(f.id)+' '+safe(f.status)+'</span>').join('')+'</td><td>'+num(r.before_estimate)+' → '+num(r.after_estimate)+'</td><td>'+safe(r.delivery_status)+'</td></tr>').join('')||'<tr><td colspan="6">No stored results</td></tr>';
+}catch(e){$('storage').textContent='Unable to fetch analytics: '+e.message}}
+$('fixture').onclick=()=>{$('error').value=('heartbeat ok\n').repeat(140)+'RuntimeError: synthetic database connection failed\n'};
+$('optimize').onclick=()=>run(true);$('analyze').onclick=()=>run(false);$('refresh').onclick=refresh;refresh();
+</script></body></html>

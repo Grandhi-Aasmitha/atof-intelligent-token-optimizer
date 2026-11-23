@@ -24,4 +24,9 @@ def optimize(request: OptimizeRequest, *, transport: str = "http_api") -> Optimi
     response = run_pipeline(request, decisions, report, _engines)
     if transport == "mcp_explicit" and response.optimized_context is not None:
         response.report.delivery_status = "mcp_tool_result_returned"
+    try:
+        from .analytics import record
+        record(response)
+    except (OSError, ValueError, RuntimeError, __import__('sqlite3').Error):
+        pass
     return response

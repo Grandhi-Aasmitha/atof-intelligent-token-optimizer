@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atof-intelligent-token-optimizer"
-version = "0.5.0"
-description = "Capability-aware token optimization platform, phase 5"
+version = "0.6.0"
+description = "Capability-aware token optimization platform, phase 6"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["fastapi>=0.110,<1", "uvicorn>=0.30,<1", "pydantic>=2,<3"]
@@ -22,7 +22,7 @@ atof-mcp-setup = "atof.mcp_setup:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-atof = ["catalog/*.json"]
+atof = ["catalog/*.json", "ui/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

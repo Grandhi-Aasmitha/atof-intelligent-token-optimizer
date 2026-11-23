@@ -3,11 +3,11 @@ from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 
-app=FastAPI(title='ATOF Phase 5',version='0.5.0')
+app=FastAPI(title='ATOF Phase 6',version='0.6.0')
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':5}
+    return {'status':'ok','phase':6}
 
 @app.get('/v1/features')
 def features():
@@ -42,3 +42,20 @@ def reporting_capabilities():
 def agent_capabilities():
     from .agent_capabilities import capabilities
     return {agent: capabilities(agent) for agent in ('custom_api', 'codex', 'copilot', 'claude')}
+
+# Local unauthenticated developer dashboard: bind server to loopback only.
+from fastapi.responses import HTMLResponse
+from importlib.resources import files as package_files
+from .analytics import history as analytics_history, summary as analytics_summary
+
+@app.get('/dashboard',response_class=HTMLResponse,include_in_schema=False)
+def dashboard():
+    return package_files('atof').joinpath('ui/dashboard.html').read_text(encoding='utf-8')
+
+@app.get('/v1/analytics/history')
+def dashboard_history(limit:int=50):
+    return analytics_history(limit)
+
+@app.get('/v1/analytics/summary')
+def dashboard_summary(limit:int=200):
+    return analytics_summary(limit)
