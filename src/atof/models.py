@@ -42,7 +42,7 @@ class OptimizationReport(BaseModel):
     optimized_estimated_tokens: int | None = None
     estimated_reduction_tokens: int | None = None
     provider_tokens_saved: int | None = None
-    delivery_status: Literal["not_attempted", "payload_returned_to_client", "observed_only"] = "not_attempted"
+    delivery_status: Literal["not_attempted", "payload_returned_to_client", "mcp_tool_result_returned", "observed_only"] = "not_attempted"
     decisions: list[FeatureDecision] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     engine: str | None = None
@@ -53,6 +53,7 @@ class OptimizationReport(BaseModel):
     estimated_reduction_percent: float | None = None
     measurement_method: str = "local_heuristic_estimate"
     provider_usage: dict | None = None
+    execution_transport: Literal["http_api", "mcp_explicit"] = "http_api"
     fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
     fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
     execution_duration_ms: float | None = None

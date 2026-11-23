@@ -24,7 +24,7 @@ STRATEGIES = (
     Strategy('coding.repository_retrieval', 'files', 60, ('coding.code_context',)),
 )
 
-def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozenset[str]) -> list[FeatureDecision]:
+def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozenset[str], *, transport: str = "http_api") -> list[FeatureDecision]:
     decisions: list[FeatureDecision] = []
     selected: set[str] = set()
     available: list[Strategy] = []
@@ -41,7 +41,7 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
             continue
         if spec.feature_id == 'coding.repository_retrieval' and len(request.files) < 2:
             continue
-        if request.agent != 'custom_api' or request.delivery_mode != 'return_payload':
+        if request.delivery_mode != 'return_payload' or not (request.agent == 'custom_api' or (transport == 'mcp_explicit' and request.agent in ('codex', 'copilot', 'claude'))):
             decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
                          reason='no_verified_context_delivery_path_for_agent'))
             continue
@@ -74,6 +74,6 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
                                             reason='authorized_evidence_and_capability_verified'))
     return decisions
 
-def select(request: OptimizeRequest, analysis: Analysis, registry: FeatureRegistry, engines=None) -> list[FeatureDecision]:
+def select(request: OptimizeRequest, analysis: Analysis, registry: FeatureRegistry, engines=None, *, transport: str = "http_api") -> list[FeatureDecision]:
     from .engines.registry import EngineRegistry
-    return _plan(request, engines if engines is not None else EngineRegistry(), analysis.evidence_types)
+    return _plan(request, engines if engines is not None else EngineRegistry(), analysis.evidence_types, transport=transport)

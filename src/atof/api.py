@@ -3,11 +3,11 @@ from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 
-app=FastAPI(title='ATOF Phase 4',version='0.4.0')
+app=FastAPI(title='ATOF Phase 5',version='0.5.0')
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':4}
+    return {'status':'ok','phase':5}
 
 @app.get('/v1/features')
 def features():
@@ -37,3 +37,8 @@ def reporting_capabilities():
             'verified_token_savings':'requires_matched_provider_on_off_trials',
             'fidelity':'conservative_required_anchor_checks_not_semantic_equivalence',
             'retention':'in_memory_request_only_no_audit_database'}
+
+@app.get('/v1/agents/capabilities')
+def agent_capabilities():
+    from .agent_capabilities import capabilities
+    return {agent: capabilities(agent) for agent in ('custom_api', 'codex', 'copilot', 'claude')}
