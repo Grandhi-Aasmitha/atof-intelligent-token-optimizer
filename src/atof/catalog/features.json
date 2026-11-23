@@ -1,0 +1,338 @@
+[
+  {
+    "id": "core.prompt",
+    "name": "Prompt Optimizer",
+    "trigger": "prompt",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.context",
+    "name": "Context Optimizer",
+    "trigger": "context",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.token_budget",
+    "name": "Token Budget Optimizer",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.conversation_history",
+    "name": "Conversation History Optimizer",
+    "trigger": "history",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.memory",
+    "name": "Memory Optimizer",
+    "trigger": "memory",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.rag_retrieval",
+    "name": "RAG Retrieval Optimizer",
+    "trigger": "retrieval",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.semantic_compression",
+    "name": "Semantic Compression Optimizer",
+    "trigger": "context",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.prompt_caching",
+    "name": "Prompt Caching Optimizer",
+    "trigger": "cache",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.response_cache",
+    "name": "Response Cache Optimizer",
+    "trigger": "cache",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "core.output_token",
+    "name": "Output Token Optimizer",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "intelligent.model_routing",
+    "name": "Dynamic Model Routing Optimizer",
+    "trigger": "model",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "intelligent.llm_call",
+    "name": "LLM Call Optimizer",
+    "trigger": "model",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "intelligent.reasoning_effort",
+    "name": "Reasoning Effort Optimizer",
+    "trigger": "model",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "intelligent.task_complexity",
+    "name": "Task Complexity Analyzer",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "intelligent.adaptive",
+    "name": "Adaptive Optimization Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "intelligent.token_cost",
+    "name": "Token Cost Optimizer",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.handoff",
+    "name": "Agent Handoff Optimizer",
+    "trigger": "agent",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.loop",
+    "name": "Agent Loop Optimizer",
+    "trigger": "agent",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.tool_call",
+    "name": "Tool Call Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.tool_output",
+    "name": "Tool Output Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.tool_schema",
+    "name": "Tool Schema Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "agent.state",
+    "name": "Agent State Optimizer",
+    "trigger": "agent",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.code_context",
+    "name": "Code Context Optimizer",
+    "trigger": "source",
+    "implemented": true,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.repository_retrieval",
+    "name": "Repository Retrieval Optimizer",
+    "trigger": "source",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.incremental_context",
+    "name": "Incremental Context Optimizer",
+    "trigger": "source",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.code_diff",
+    "name": "Code Diff Optimizer",
+    "trigger": "diff",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.test_log",
+    "name": "Test Log Optimizer",
+    "trigger": "test",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "coding.error_context",
+    "name": "Error Context Optimizer",
+    "trigger": "error",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.embedding",
+    "name": "Embedding Optimizer",
+    "trigger": "embedding",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.batch_request",
+    "name": "Batch Request Optimizer",
+    "trigger": "batch",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.duplicate_request",
+    "name": "Duplicate Request Optimizer",
+    "trigger": "cache",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.structured_output",
+    "name": "Structured Output Optimizer",
+    "trigger": "structure",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.multimodal",
+    "name": "Multimodal Token Optimizer",
+    "trigger": "multimodal",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.quality_aware",
+    "name": "Quality-Aware Optimization Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.dynamic_cache",
+    "name": "Dynamic Cache Management Engine",
+    "trigger": "cache",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "enterprise.continuous_learning",
+    "name": "Continuous Optimization Learning Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "governance.token_counting",
+    "name": "Token Counting and Estimation Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "governance.policy",
+    "name": "Optimization Policy Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "governance.analytics",
+    "name": "Token Usage and Savings Analytics",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "governance.evaluation",
+    "name": "Optimization Evaluation and Regression Engine",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "advanced.compaction",
+    "name": "Context Compaction and Dynamic Trigger Optimizer",
+    "trigger": "history",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.tool_clearing",
+    "name": "Selective Tool-Result Clearing Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.persistent_memory",
+    "name": "Persistent Memory and Just-in-Time Retrieval Optimizer",
+    "trigger": "memory",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.context_growth",
+    "name": "Context Growth Analyzer",
+    "trigger": "context",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.fidelity",
+    "name": "Context Fidelity Validator",
+    "trigger": "all",
+    "implemented": false,
+    "classification": "control"
+  },
+  {
+    "id": "advanced.cache_aware_clearing",
+    "name": "Prompt Cache-Aware Clearing Optimizer",
+    "trigger": "cache",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.tool_search",
+    "name": "Tool Search Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  },
+  {
+    "id": "advanced.programmatic_tool",
+    "name": "Programmatic Tool Execution Optimizer",
+    "trigger": "tool",
+    "implemented": false,
+    "classification": "strategy"
+  }
+]
