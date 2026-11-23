@@ -16,7 +16,7 @@ def analyze(request: OptimizeRequest)->Analysis:
     intent='debugging' if _DEBUG.search(text) else 'explanation' if _EXPLAIN.search(text) else 'test_execution' if _TEST.search(text) else 'general'
     evidence=set()
     if request.files: evidence.add('source')
-    if 'diff --git ' in text: evidence.add('diff')
-    if 'Traceback (most recent call last)' in text or re.search(r'\b(?:[A-Za-z]+Error|[A-Za-z]+Exception):',text):evidence.add('error')
-    if re.search(r'\b(?:FAILED|tests? failed|test failures)\b',text,re.I): evidence.add('test')
+    if request.diff.strip() or 'diff --git ' in text: evidence.add('diff')
+    if request.error_output.strip() or 'Traceback (most recent call last)' in text or re.search(r'\b(?:[A-Za-z]+Error|[A-Za-z]+Exception):',text):evidence.add('error')
+    if request.test_output.strip() or re.search(r'\b(?:FAILED|tests? failed|test failures)\b',text,re.I): evidence.add('test')
     return Analysis(intent,frozenset(evidence))

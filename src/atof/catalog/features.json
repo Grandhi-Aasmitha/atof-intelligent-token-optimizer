@@ -164,7 +164,7 @@
     "id": "coding.repository_retrieval",
     "name": "Repository Retrieval Optimizer",
     "trigger": "source",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {
@@ -178,21 +178,21 @@
     "id": "coding.code_diff",
     "name": "Code Diff Optimizer",
     "trigger": "diff",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {
     "id": "coding.test_log",
     "name": "Test Log Optimizer",
     "trigger": "test",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {
     "id": "coding.error_context",
     "name": "Error Context Optimizer",
     "trigger": "error",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {

@@ -1,0 +1,13 @@
+<idea-plugin>
+  <id>dev.atof.intellij.selection</id>
+  <name>ATOF Selection Optimizer</name>
+  <vendor>ATOF Local</vendor>
+  <description>Explicit selected-text optimization with local ATOF; no automatic AI interception.</description>
+  <depends>com.intellij.modules.platform</depends>
+  <actions>
+    <action id="dev.atof.intellij.OptimizeSelection" class="dev.atof.OptimizeSelectionAction"
+            text="ATOF: Optimize Selection" description="Send selected text to local ATOF with consent">
+      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>

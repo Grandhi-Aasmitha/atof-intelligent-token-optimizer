@@ -14,7 +14,7 @@ def request(**overrides):
 
 def test_registry_exactly_48_unique():
     reg=FeatureRegistry();assert len(reg.all())==48;assert len({f.id for f in reg.all()})==48
-    assert sum(f.implemented for f in reg.all())==1
+    assert sum(f.implemented for f in reg.all())==5
 
 def test_dynamic_selection_only_relevant():
     result=optimize(request(execute=False))
@@ -55,4 +55,4 @@ def test_duplicate_file_paths_rejected():
 def test_diff_not_falsely_executed():
     result=optimize(OptimizeRequest(task='Review this diff\ndiff --git a/a.py b/a.py'))
     assert result.report.decisions[0].feature_id=='coding.code_diff'
-    assert result.report.decisions[0].status=='unsupported'
+    assert result.report.decisions[0].status=='skipped'

@@ -9,6 +9,11 @@ class EvidenceFile(BaseModel):
 class OptimizeRequest(BaseModel):
     task: str = Field(min_length=1, max_length=20_000)
     files: list[EvidenceFile] = Field(default_factory=list, max_length=100)
+    diff: str = Field(default="", max_length=300_000)
+    test_output: str = Field(default="", max_length=500_000)
+    error_output: str = Field(default="", max_length=500_000)
+    feature_override: str | None = None
+    max_optimizers: int = Field(default=4, ge=1, le=5)
     agent: Literal["custom_api", "codex", "copilot", "claude"] = "custom_api"
     token_budget: int = Field(default=1600, ge=64, le=200_000)
     execute: bool = True
@@ -37,9 +42,21 @@ class OptimizationReport(BaseModel):
     optimized_estimated_tokens: int | None = None
     estimated_reduction_tokens: int | None = None
     provider_tokens_saved: int | None = None
-    delivery_status: Literal["not_attempted", "payload_returned_to_client", "observed_only"] = "not_attempted"
+    delivery_status: Literal["not_attempted", "payload_returned_to_client", "mcp_tool_result_returned", "observed_only"] = "not_attempted"
     decisions: list[FeatureDecision] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    engine: str | None = None
+    executed_feature: str | None = None
+    executed_features: list[str] = Field(default_factory=list)
+    stage_results: list[dict[str, str | int | None]] = Field(default_factory=list)
+    original_context_estimated_tokens: int | None = None
+    estimated_reduction_percent: float | None = None
+    measurement_method: str = "local_heuristic_estimate"
+    provider_usage: dict | None = None
+    execution_transport: Literal["http_api", "mcp_explicit"] = "http_api"
+    fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
+    fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
+    execution_duration_ms: float | None = None
 
 class OptimizeResponse(BaseModel):
     optimized_context: str | None = None

@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ATOF: Verify Upstream Token Optimizer",
+      "type": "shell",
+      "command": "py",
+      "args": [
+        "-3.11",
+        "${workspaceFolder}/scripts/test_upstream_token_optimizer.py",
+        "--upstream",
+        "${workspaceFolder}/../token-optimizer",
+        "--output-dir",
+        "${workspaceFolder}/demo-results"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    }
+  ]
+}
