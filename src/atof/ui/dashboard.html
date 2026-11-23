@@ -15,7 +15,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;b
 </style></head><body><header><h1>ATOF · Optimization Analytics</h1><div>Phase 6 · Local dashboard · Agent-aware diagnostics</div></header>
 <main><div class="warning"><b>Measurement boundary:</b> Shown token counts are local estimates, not provider-measured savings. Selecting an agent does not switch your IDE assistant or transparently intercept its model requests. Codex, Copilot and Claude need explicit MCP integration.</div>
 <div class="grid"><section><h2>Test a request</h2>
-<label for="agent">Agent</label><select id="agent"><option value="custom_api">ATOF custom API — can optimize</option><option value="copilot">Copilot — observe-only via HTTP</option><option value="codex">Codex — observe-only via HTTP</option><option value="claude">Claude Code — observe-only via HTTP</option></select>
+<label for="agent">Agent</label><select id="agent"><option value="custom_api">ATOF custom API — can optimize</option><option value="copilot">Copilot — observe-only via HTTP</option><option value="codex">Codex — observe-only via HTTP</option><option value="claude">Claude Code — observe-only via HTTP</option><option value="openai" disabled>ChatGPT / OpenAI API — not connected</option><option value="gemini" disabled>Gemini API — not connected</option></select>
 <label for="task">Prompt/task</label><input id="task" value="Investigate repeated RuntimeError">
 <label for="error">Permitted test log</label><textarea id="error">heartbeat ok&#10;heartbeat ok&#10;RuntimeError: synthetic error</textarea>
 <button id="fixture">Use synthetic fixture</button><button id="analyze">Analyze</button><button id="optimize">Optimize</button>
