@@ -10,7 +10,7 @@
     "id": "core.context",
     "name": "Context Optimizer",
     "trigger": "context",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {
@@ -136,7 +136,7 @@
     "id": "agent.tool_output",
     "name": "Tool Output Optimizer",
     "trigger": "tool",
-    "implemented": false,
+    "implemented": true,
     "classification": "strategy"
   },
   {

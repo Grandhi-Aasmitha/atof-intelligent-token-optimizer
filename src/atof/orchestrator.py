@@ -4,22 +4,15 @@ Safe default: retain the original evidence section on failure, no reduction or
 cross-feature conflict. The returned result is only an API payload candidate.
 """
 from time import perf_counter
-from .fidelity import validate_stage
+from .fidelity import validate_stage, FidelityResult
 from .measurement import compare_context
 from .legacy.tokens import estimate_text
 from .models import OptimizeRequest, OptimizationReport, FeatureDecision
 from .engines.registry import EngineRegistry
 
-SLOTS = ('error_output', 'test_output', 'diff', 'files')
-FEATURE_SLOT = {
-    'coding.error_context': 'error_output',
-    'coding.test_log': 'test_output',
-    'coding.code_diff': 'diff',
-    'coding.code_context': 'files',
-    'coding.repository_retrieval': 'files',
-}
 LABEL = {'error_output':'ERROR OUTPUT', 'test_output':'TEST OUTPUT',
-         'diff':'GIT DIFF', 'files':'SOURCE FILES'}
+         'diff':'GIT DIFF', 'files':'SOURCE FILES', 'context':'CONTEXT', 'tool_output':'TOOL OUTPUT'}
+SLOTS = tuple(LABEL)
 
 
 def source_sections(request: OptimizeRequest) -> dict[str, str]:
@@ -32,6 +25,9 @@ def source_sections(request: OptimizeRequest) -> dict[str, str]:
         result['diff'] = request.diff
     if request.files:
         result['files'] = '\n\n'.join(f'# {f.path}\n{f.content}' for f in request.files)
+    for slot in ('context', 'tool_output'):
+        if getattr(request, slot):
+            result[slot] = getattr(request, slot)
     return result
 
 
@@ -66,7 +62,8 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
     for decision in decisions:
         if decision.status != 'selected':
             continue
-        slot = FEATURE_SLOT[decision.feature_id]
+        spec = engines.spec(decision.feature_id)
+        slot = spec.evidence
         if slot in used_slots:
             decision.status = 'skipped'
             decision.reason = 'evidence_slot_already_processed'
@@ -86,7 +83,11 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
             if not safe:
                 decision.status, decision.reason = 'skipped', 'not_smaller_or_unresolved_dependencies'
                 continue
-            fidelity = validate_stage(decision.feature_id, original[slot], result.content, request.task)
+            if spec.validator is not None:
+                valid = spec.validator(original[slot], result.content) is True
+                fidelity = FidelityResult(valid, 'plugin_validation_passed' if valid else 'plugin_validation_failed', 1, int(valid))
+            else:
+                fidelity = validate_stage(decision.feature_id, original[slot], result.content, request.task)
             report.fidelity_checks.append({'feature_id':decision.feature_id,
                 'passed':fidelity.passed, 'reason':fidelity.reason,
                 'anchors_checked':fidelity.anchors_checked,

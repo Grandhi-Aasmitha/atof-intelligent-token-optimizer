@@ -16,12 +16,19 @@ def optimize(request: OptimizeRequest, *, transport: str = "http_api") -> Optimi
         raise ValueError("unsupported internal execution transport")
     analysis = analyze(request)
     decisions = select(request, analysis, _registry, _engines, transport=transport)
-    original = compose(source_sections(request))
+    sections = source_sections(request)
+    original = compose(sections)
     report = OptimizationReport(request_id=str(uuid.uuid4()), intent=analysis.intent,
                                 agent=request.agent,
                                 original_estimated_tokens=estimate_text(original or request.task),
                                 decisions=decisions, execution_transport=transport)
+    report.context_breakdown = {key: estimate_text(value) for key, value in sections.items()}
+    report.token_budget = request.token_budget
     response = run_pipeline(request, decisions, report, _engines)
+    effective = report.optimized_estimated_tokens if response.optimized_context is not None else report.original_estimated_tokens
+    report.budget_status = 'within_budget' if effective <= request.token_budget else 'over_budget'
+    if report.budget_status == 'over_budget':
+        report.warnings.append('Evidence exceeds estimated budget; no unsafe truncation or provider limit guarantee')
     if transport == "mcp_explicit" and response.optimized_context is not None:
         response.report.delivery_status = "mcp_tool_result_returned"
     try:

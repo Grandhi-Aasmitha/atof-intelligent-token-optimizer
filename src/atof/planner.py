@@ -3,51 +3,38 @@
 The planner never authorizes file access or agent interception; all evidence is
 provided explicitly by the caller. Feature overrides cannot bypass gates.
 """
-from dataclasses import dataclass
 from .registry import FeatureRegistry
 from .analyzer import Analysis
 from .models import FeatureDecision, OptimizeRequest
-
-@dataclass(frozen=True)
-class Strategy:
-    feature_id: str
-    evidence: str
-    priority: int
-    conflicts: tuple[str, ...] = ()
-    depends_on: tuple[str, ...] = ()
-
-STRATEGIES = (
-    Strategy('coding.error_context', 'error_output', 100),
-    Strategy('coding.test_log', 'test_output', 90),
-    Strategy('coding.code_diff', 'diff', 80),
-    Strategy('coding.code_context', 'files', 70, ('coding.repository_retrieval',)),
-    Strategy('coding.repository_retrieval', 'files', 60, ('coding.code_context',)),
-)
+from .adapter_policy import can_return_candidate
 
 def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozenset[str], *, transport: str = "http_api") -> list[FeatureDecision]:
     decisions: list[FeatureDecision] = []
     selected: set[str] = set()
     available: list[Strategy] = []
-    for spec in STRATEGIES:
+    for spec in engines.strategies():
         if spec.evidence == 'files' and not request.files:
             continue
         if spec.evidence != 'files' and not getattr(request, spec.evidence).strip():
             # Classifier may infer evidence from a prompt, but without its
             # actual structured payload it cannot be transformed.
-            kind = {'diff':'diff', 'test_output':'test', 'error_output':'error'}[spec.evidence]
+            kind = {'diff':'diff', 'test_output':'test', 'error_output':'error'}.get(spec.evidence)
             if kind in request_analysis_evidence:
                 decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
                                   reason='structured_evidence_required'))
             continue
         if spec.feature_id == 'coding.repository_retrieval' and len(request.files) < 2:
             continue
-        if request.delivery_mode != 'return_payload' or not (request.agent == 'custom_api' or (transport == 'mcp_explicit' and request.agent in ('codex', 'copilot', 'claude'))):
+        if not can_return_candidate(request.agent, transport, request.delivery_mode):
             decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
                          reason='no_verified_context_delivery_path_for_agent'))
             continue
         if not engines.supports(spec.feature_id):
             decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
                          reason='no_registered_engine'))
+            continue
+        if not request.optimization_enabled:
+            decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped', reason='optimization_disabled'))
             continue
         available.append(spec)
 

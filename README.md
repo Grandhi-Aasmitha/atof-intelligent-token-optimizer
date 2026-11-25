@@ -1,8 +1,8 @@
-# ATOF Next Generation — Phases 7 + 8
+# ATOF Next Generation — Generic Platform Foundation
 
 ATOF provides **explicit IDE text optimization** and **controlled A/B provider benchmarks** on top of the Phase 1–6 foundation.
 
-Existing features: 48 registered requirements, five native optimization strategies, a capability-aware planner, fidelity checks, local dashboard, and explicit MCP tools for Codex/Copilot/Claude.
+Existing features: 48 registered requirements, seven native optimization strategies, a capability-aware planner, fidelity checks, local dashboard, and explicit MCP tools for Codex/Copilot/Claude.
 
 ## Windows developer setup
 
@@ -60,3 +60,9 @@ Never commit credentials. Test with synthetic/non-sensitive data. Model provider
 - No actual provider calls were made during offline tests.
 - The third-party Token Optimizer implementation has **not** been integrated; its license and compatibility must be resolved first.
 - The original/optimized sizes are local estimates except for live provider API responses where usage receipts are returned.
+
+## Generic platform upgrade
+
+The planner now discovers plugin metadata from the engine registry. Generic context and tool output support reversible repeated-line encoding. The existing task prompt is not rewritten. Seven modules are executable; the other feature IDs remain a roadmap, not active optimizers. New plugins require a fidelity validator and authorized evidence.
+
+Run `python -m atof.verify_platform` or use **Run feature verification** in the dashboard. Each synthetic fixture runs OFF and ON, with no model calls. Enable analytics before launch to see both arms in history. See [Generic platform onboarding and verification](docs/GENERIC_PLATFORM.md).

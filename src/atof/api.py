@@ -66,3 +66,9 @@ from .ide import IDERequest, optimize_selection
 @app.post('/v1/ide/optimize', response_model=OptimizeResponse)
 def ide_optimize(request: IDERequest):
     return optimize_selection(request)
+
+@app.post('/v1/verification')
+def verification():
+    """Run synthetic fixtures; records local metadata only if enabled."""
+    from .verify_platform import verify
+    return verify()
