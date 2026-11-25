@@ -44,7 +44,7 @@ $('afterbar').style.width=r.optimized_estimated_tokens!=null&&r.original_estimat
 $('fidelity').textContent='Fidelity: '+r.fidelity_status+' | Evidence budget: '+r.budget_status;
 $('duration').textContent='Processing time: '+num(r.execution_duration_ms)+' ms';$('delivery').textContent='Delivery: '+r.delivery_status+' (model consumption unverified)';
 $('features').innerHTML=r.decisions.map(d=>'<span class="chip">'+safe(d.feature_id)+' · '+safe(d.status)+' ('+safe(d.reason)+')</span>').join('')||'No applicable features';
-$('status').textContent=data.optimized_context?'Candidate returned; provider tokens saved unknown.':execute?'No reducing candidate returned.':'Analysis complete; no execution.';
+$('status').textContent=data.optimized_context?'Candidate returned; provider tokens saved unknown.':!$('enabled').checked?'Optimization disabled; use original evidence.':execute?'No reducing candidate returned.':'Analysis complete; no execution.';
 await refresh();}catch(e){$('status').textContent='Error: '+e.message}}
 async function refresh(){try{const [s,h]=await Promise.all([j('/v1/analytics/summary'),j('/v1/analytics/history')]);
 $('count').textContent=num(s.total_requests);$('candidates').textContent=num(s.candidate_requests);$('saved').textContent=num(s.estimated_tokens_removed);$('rate').textContent=s.estimated_reduction_percent==null?'—':s.estimated_reduction_percent+'%';

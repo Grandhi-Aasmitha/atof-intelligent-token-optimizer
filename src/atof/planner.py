@@ -7,12 +7,15 @@ from .registry import FeatureRegistry
 from .analyzer import Analysis
 from .models import FeatureDecision, OptimizeRequest
 from .adapter_policy import can_return_candidate
+from .engines.base import PluginSpec
 
 def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozenset[str], *, transport: str = "http_api") -> list[FeatureDecision]:
     decisions: list[FeatureDecision] = []
     selected: set[str] = set()
-    available: list[Strategy] = []
+    available: list[PluginSpec] = []
     for spec in engines.strategies():
+        if request.feature_override and spec.feature_id != request.feature_override:
+            continue
         if spec.evidence == 'files' and not request.files:
             continue
         if spec.evidence != 'files' and not getattr(request, spec.evidence).strip():
@@ -40,9 +43,10 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
 
     if request.feature_override:
         if request.feature_override not in {s.feature_id for s in available}:
-            decisions.append(FeatureDecision(feature_id=request.feature_override,
-                                            status='unsupported', reason='override_not_eligible'))
-            return decisions
+            if any(d.reason == 'optimization_disabled' for d in decisions):
+                return decisions
+            return [FeatureDecision(feature_id=request.feature_override,
+                                    status='unsupported', reason='override_not_eligible')]
         available = [s for s in available if s.feature_id == request.feature_override]
 
     for spec in available:

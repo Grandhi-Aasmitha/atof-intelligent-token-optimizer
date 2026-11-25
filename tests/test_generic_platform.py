@@ -77,3 +77,31 @@ def test_verification_matrix_and_dashboard_history(tmp_path, monkeypatch):
     summary = client.get('/v1/analytics/summary').json()
     assert summary['total_requests'] == 14 and summary['candidate_requests'] == 7
     assert summary['estimated_tokens_removed'] == sum(r['removed'] for r in result['results'])
+
+
+def test_off_override_has_one_truthful_decision():
+    req = OptimizeRequest(task='Inspect', context='status healthy\n'*100,
+                          tool_output='worker ready\n'*100,
+                          feature_override='core.context', optimization_enabled=False)
+    r = optimize(req)
+    assert r.optimized_context is None
+    assert [(d.feature_id,d.status,d.reason) for d in r.report.decisions] == [('core.context','skipped','optimization_disabled')]
+
+
+def test_dependency_requires_successful_execution(monkeypatch):
+    from atof import service
+    class Failing:
+        feature_id = 'custom.first'
+        spec = PluginSpec(feature_id, 'context', 100, validator=lambda a,b:False)
+        def optimize(self, request):
+            raise RuntimeError('do not report raw input')
+    class Dependent:
+        feature_id = 'custom.second'
+        spec = PluginSpec(feature_id, 'tool_output', 50, depends_on=('custom.first',), validator=restores)
+        def optimize(self, request):
+            raise AssertionError('must never execute')
+    monkeypatch.setattr(service,'_engines',EngineRegistry([Failing(),Dependent()]))
+    r = optimize(OptimizeRequest(task='Review', context='context\n'*100, tool_output='tool\n'*100))
+    assert not r.optimized_context
+    assert [(d.feature_id,d.status,d.reason) for d in r.report.decisions] == [
+        ('custom.first','failed','engine_RuntimeError'), ('custom.second','skipped','dependency_not_executed')]

@@ -64,6 +64,9 @@ def run_pipeline(request: OptimizeRequest, decisions: list[FeatureDecision],
             continue
         spec = engines.spec(decision.feature_id)
         slot = spec.evidence
+        if not set(spec.depends_on).issubset(report.executed_features):
+            decision.status, decision.reason = 'skipped', 'dependency_not_executed'
+            continue
         if slot in used_slots:
             decision.status = 'skipped'
             decision.reason = 'evidence_slot_already_processed'

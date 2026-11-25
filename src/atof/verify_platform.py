@@ -27,6 +27,7 @@ def verify():
         report = on.report
         content = on.optimized_context or ''
         passed = (off.optimized_context is None and not off.report.executed_features and
+                  len(off.report.decisions) == 1 and off.report.decisions[0].reason == 'optimization_disabled' and
                   report.executed_features == [feature] and report.fidelity_status == 'passed' and
                   report.estimated_reduction_tokens is not None and report.estimated_reduction_tokens > 0 and
                   report.original_estimated_tokens == off.report.original_estimated_tokens and
