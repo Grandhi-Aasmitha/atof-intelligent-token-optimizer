@@ -14,7 +14,7 @@ def request(**overrides):
 
 def test_registry_exactly_48_unique():
     reg=FeatureRegistry();assert len(reg.all())==48;assert len({f.id for f in reg.all()})==48
-    assert sum(f.implemented for f in reg.all())==5
+    assert sum(f.implemented for f in reg.all())==7
 
 def test_dynamic_selection_only_relevant():
     result=optimize(request(execute=False))

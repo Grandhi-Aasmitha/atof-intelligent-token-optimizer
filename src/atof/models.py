@@ -12,6 +12,9 @@ class OptimizeRequest(BaseModel):
     diff: str = Field(default="", max_length=300_000)
     test_output: str = Field(default="", max_length=500_000)
     error_output: str = Field(default="", max_length=500_000)
+    context: str = Field(default="", max_length=500_000)
+    tool_output: str = Field(default="", max_length=500_000)
+    optimization_enabled: bool = True
     feature_override: str | None = None
     max_optimizers: int = Field(default=4, ge=1, le=5)
     agent: Literal["custom_api", "codex", "copilot", "claude"] = "custom_api"
@@ -57,6 +60,9 @@ class OptimizationReport(BaseModel):
     fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
     fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
     execution_duration_ms: float | None = None
+    context_breakdown: dict[str, int] = Field(default_factory=dict)
+    token_budget: int | None = None
+    budget_status: Literal['not_evaluated', 'within_budget', 'over_budget'] = 'not_evaluated'
 
 class OptimizeResponse(BaseModel):
     optimized_context: str | None = None

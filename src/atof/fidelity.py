@@ -37,6 +37,10 @@ def _significant_lines(text: str, kind: str) -> set[str]:
 def validate_stage(feature_id: str, original: str, optimized: str, task: str = '') -> FidelityResult:
     if not optimized.strip():
         return FidelityResult(False, 'empty_optimized_context', 0, 0)
+    if feature_id in ('core.context', 'agent.tool_output'):
+        from .engines.generic import restores
+        valid = restores(original, optimized)
+        return FidelityResult(valid, 'exact_round_trip' if valid else 'round_trip_failed', 1, int(valid))
     kind = {'coding.code_diff':'diff', 'coding.test_log':'test', 'coding.error_context':'error'}.get(feature_id)
     anchors = _significant_lines(original, kind) if kind else set()
     if feature_id == 'coding.code_context':

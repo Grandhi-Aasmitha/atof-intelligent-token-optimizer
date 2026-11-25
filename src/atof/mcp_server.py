@@ -36,6 +36,9 @@ REQUEST_SCHEMA = {
         'diff': {'type':'string','description':'Optional complete git diff text'},
         'test_output': {'type':'string','description':'Optional test runner output'},
         'error_output': {'type':'string','description':'Optional exception/diagnostic output'},
+        'context': {'type':'string','description':'Authorized text; identical consecutive lines may be encoded with explicit repeat counts'},
+        'tool_output': {'type':'string','description':'Authorized tool output; identical consecutive lines may be encoded with explicit repeat counts'},
+        'optimization_enabled': {'type':'boolean','description':'False disables transformation'},
         'feature_override': {'type':'string','description':'Optional exact feature ID; cannot override eligibility checks'},
         'max_optimizers': {'type':'integer','minimum':1,'maximum':5},
         'token_budget': {'type':'integer','minimum':64},
@@ -52,7 +55,7 @@ TOOL_DEFS = [
     },
     {
         'name':'atof_analyze',
-        'description':'Inspect supplied source, diff, test and error evidence; report only relevant optimization features without executing.',
+        'description':'Inspect supplied source, diff, test, error, context and tool-output evidence; report only relevant optimization features without executing.',
         'inputSchema': REQUEST_SCHEMA,
     },
     {

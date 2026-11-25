@@ -16,7 +16,7 @@ def req(**overrides):
 
 def test_registry_is_extensible_and_deduplicated():
     registry = EngineRegistry()
-    assert len(registry.capabilities()) == 5
+    assert len(registry.capabilities()) == 7
     assert registry.supports('coding.code_context')
     assert not registry.supports('core.model_routing')
     with pytest.raises(ValueError, match='duplicate'):
@@ -74,7 +74,7 @@ def test_no_savings_no_false_positive():
 def test_engine_endpoint():
     response=client.get('/v1/engines')
     assert response.status_code == 200
-    assert response.json()['count'] == 5
+    assert response.json()['count'] == 7
     assert response.json()['external_token_optimizer'] == 'not_installed_license_review_required'
 
 def test_external_engine_fails_closed():
