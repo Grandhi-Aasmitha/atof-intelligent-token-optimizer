@@ -49,3 +49,9 @@ Implement OptimizationEngine.optimize(request) -> EngineResult. Declare a Plugin
 - Verify provider-measured savings under approved controlled matched trials. Do not confuse local estimates, explicit tool delivery, or model consumption.
 
 The third-party compressor remains independent. This upgrade does not install hooks, switch the IDE assistant, or change company security settings.
+
+## Applied-feature reporting
+
+Normal HTTP optimization, explicit IDE optimization, MCP `atof_optimize`, console output and analytics history show only accepted, executed optimizers. An analyzed, skipped, rejected, unsupported or disabled feature is not presented as applied. Older stored history is filtered on read; no database deletion or migration is required. If no reducing candidate is accepted, the feature list is empty. Safety and delivery warnings remain separate from feature names.
+
+For explicit diagnostics use `/v1/analyze`, `atof_analyze`, `python -m atof.cli --diagnostics --file examples/sample_request.json`, or the collapsed dashboard developer verification panel. These are planning/test views, not normal execution reports. The planner evaluates registered plugins against the supplied evidence and capabilities; the caller still supplies authorized evidence. No new optimization algorithms were added in this reporting change. Future registered modules require no report-specific changes. File-count eligibility is declared in plugin metadata (`minimum_items`).

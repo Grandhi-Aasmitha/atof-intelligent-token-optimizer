@@ -2,6 +2,7 @@
 import os, json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from .reporting import applied_response
 
 def db_path():
     if os.getenv("ATOF_ANALYTICS_ENABLED","0") != "1":
@@ -23,7 +24,7 @@ def connect(path):
 def record(response):
     path=db_path()
     if path is None: return False
-    r=response.report
+    r=applied_response(response).report
     features=[{"id":d.feature_id,"status":d.status,"reason":d.reason} for d in r.decisions]
     with connect(path) as conn:
         conn.execute("INSERT OR IGNORE INTO request_metrics VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -44,7 +45,10 @@ def history(limit=50):
         rows=conn.execute("SELECT * FROM request_metrics ORDER BY timestamp_utc DESC,request_id DESC LIMIT ?",(min(200,max(1,limit)),)).fetchall()
     records=[]
     for row in rows:
-        item=dict(row);item["features"]=json.loads(item.pop("feature_outcomes_json"));records.append(item)
+        item=dict(row)
+        outcomes=json.loads(item.pop('feature_outcomes_json'))
+        item['features'] = [f for f in outcomes if f.get('status') == 'executed'] if (item['after_estimate'] is not None and (item['reduction_estimate'] or 0) > 0) else []
+        records.append(item)
     return {"enabled":True,"records":records}
 
 def summary(limit=200):

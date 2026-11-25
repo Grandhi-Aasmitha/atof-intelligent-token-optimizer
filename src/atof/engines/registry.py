@@ -11,7 +11,7 @@ LEGACY_SPECS = {
     'coding.test_log': PluginSpec('coding.test_log', 'test_output', 90),
     'coding.code_diff': PluginSpec('coding.code_diff', 'diff', 80),
     'coding.code_context': PluginSpec('coding.code_context', 'files', 70, ('coding.repository_retrieval',)),
-    'coding.repository_retrieval': PluginSpec('coding.repository_retrieval', 'files', 60, ('coding.code_context',)),
+    'coding.repository_retrieval': PluginSpec('coding.repository_retrieval', 'files', 60, ('coding.code_context',), minimum_items=2),
 }
 
 @dataclass(frozen=True)
@@ -36,6 +36,8 @@ class EngineRegistry:
             spec = getattr(engine, 'spec', LEGACY_SPECS.get(engine.feature_id))
             if not isinstance(spec, PluginSpec) or spec.feature_id != engine.feature_id or spec.evidence not in ('files','diff','test_output','error_output','context','tool_output'):
                 raise ValueError(f'invalid plugin metadata: {engine.feature_id}')
+            if spec.minimum_items < 1 or (spec.evidence != 'files' and spec.minimum_items != 1):
+                raise ValueError(f'invalid plugin evidence cardinality: {engine.feature_id}')
             if engine.feature_id not in LEGACY_SPECS and not callable(spec.validator):
                 raise ValueError(f'plugin requires a fidelity validator: {engine.feature_id}')
             self._engines[engine.feature_id] = engine

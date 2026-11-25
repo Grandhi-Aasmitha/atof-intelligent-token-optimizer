@@ -14,6 +14,7 @@ from typing import Any
 from pydantic import ValidationError
 from .models import OptimizeRequest
 from .service import optimize
+from .reporting import applied_response
 from .agent_capabilities import capabilities, AGENTS
 
 PROTOCOL_VERSION = '2025-06-18'
@@ -103,6 +104,8 @@ def _call_tool(name: str, arguments: dict, agent: str) -> dict:
         response=optimize(validated, transport='mcp_explicit')
     except Exception:
         return _tool_result({'error':'internal_optimizer_error'},is_error=True)
+    if name == 'atof_optimize':
+        response = applied_response(response)
     return _tool_result(response.model_dump(mode='json', exclude_none=False))
 
 

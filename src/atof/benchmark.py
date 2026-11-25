@@ -9,6 +9,7 @@ import json, os, time, re
 from .models import OptimizeRequest
 from .orchestrator import compose, source_sections
 from .service import optimize
+from .reporting import applied_response
 from .legacy.tokens import estimate_text
 
 class ProviderError(RuntimeError): pass
@@ -105,7 +106,7 @@ def benchmark(request: OptimizeRequest,provider:Provider,*,required_terms=(),ord
     if not baseline: raise ValueError('Missing evidence')
     response=optimize(request)
     if not response.optimized_context:
-        return {'status':'no_reducing_candidate','provider_calls':0,'report':response.report.model_dump(mode='json')}
+        return {'status':'no_reducing_candidate','provider_calls':0,'report':applied_response(response).report.model_dump(mode='json')}
     prompts={'A':_prompt(request.task,baseline),'B':_prompt(request.task,response.optimized_context)}
     results={arm:provider.generate(prompts[arm],tuple(required_terms)) for arm in order}
     a,b=results['A'],results['B']
