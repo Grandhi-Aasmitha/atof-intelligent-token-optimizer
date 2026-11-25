@@ -17,6 +17,7 @@ class PluginSpec:
     conflicts: tuple[str, ...] = ()
     depends_on: tuple[str, ...] = ()
     validator: Callable[[str, str], bool] | None = None
+    minimum_items: int = 1
 
 class OptimizationEngine(Protocol):
     feature_id: str

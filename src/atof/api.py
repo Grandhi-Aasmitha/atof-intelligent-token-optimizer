@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
+from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
 
@@ -21,7 +22,7 @@ def analyze_request(payload:OptimizeRequest):
 
 @app.post('/v1/optimize',response_model=OptimizeResponse)
 def optimize_request(payload:OptimizeRequest):
-    return optimize(payload)
+    return applied_response(optimize(payload))
 
 @app.get('/v1/engines')
 def engines():
@@ -65,7 +66,7 @@ from .ide import IDERequest, optimize_selection
 
 @app.post('/v1/ide/optimize', response_model=OptimizeResponse)
 def ide_optimize(request: IDERequest):
-    return optimize_selection(request)
+    return applied_response(optimize_selection(request))
 
 @app.post('/v1/verification')
 def verification():

@@ -16,7 +16,7 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
     for spec in engines.strategies():
         if request.feature_override and spec.feature_id != request.feature_override:
             continue
-        if spec.evidence == 'files' and not request.files:
+        if spec.evidence == 'files' and len(request.files) < spec.minimum_items:
             continue
         if spec.evidence != 'files' and not getattr(request, spec.evidence).strip():
             # Classifier may infer evidence from a prompt, but without its
@@ -25,8 +25,6 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
             if kind in request_analysis_evidence:
                 decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
                                   reason='structured_evidence_required'))
-            continue
-        if spec.feature_id == 'coding.repository_retrieval' and len(request.files) < 2:
             continue
         if not can_return_candidate(request.agent, transport, request.delivery_mode):
             decisions.append(FeatureDecision(feature_id=spec.feature_id, status='unsupported',
