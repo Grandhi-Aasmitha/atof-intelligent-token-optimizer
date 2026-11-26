@@ -87,3 +87,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 6
 
 [VS Code integration](docs/PHASE6_VSCODE_INTEGRATION.md): status bar, global policy toggle, optional owned model request and opt-in MCP definition. Native agent interception remains unverified.
+
+## Revised roadmap — Phase 7
+
+[JetBrains integration](docs/PHASE7_JETBRAINS_INTEGRATION.md): shared controls, one dashboard, opt-in plugin-owned API request. Native AI assistant interception remains unverified.

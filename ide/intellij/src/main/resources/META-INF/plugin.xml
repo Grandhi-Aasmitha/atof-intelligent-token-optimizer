@@ -1,13 +1,22 @@
 <idea-plugin>
   <id>dev.atof.intellij.selection</id>
-  <name>ATOF Selection Optimizer</name>
+  <name>ATOF Control Center</name>
   <vendor>ATOF Local</vendor>
-  <description>Explicit selected-text optimization with local ATOF; no automatic AI interception.</description>
+  <description>Shared local ATOF controls and explicitly approved plugin-owned model requests. No automatic native AI interception.</description>
   <depends>com.intellij.modules.platform</depends>
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="ATOF" anchor="right" factoryClass="dev.atof.AtofToolWindowFactory"/>
+  </extensions>
   <actions>
     <action id="dev.atof.intellij.OptimizeSelection" class="dev.atof.OptimizeSelectionAction"
-            text="ATOF: Optimize Selection" description="Send selected text to local ATOF with consent">
+            text="ATOF: Optimize Selection (Local Candidate)" description="Prepare selected text locally with consent">
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
     </action>
+    <action id="dev.atof.intellij.AskAI" class="dev.atof.AskAiAction"
+            text="ATOF: Ask AI with ATOF" description="Send a single explicitly approved plugin-owned model request">
+      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+    </action>
+    <action id="dev.atof.intellij.OpenDashboard" class="dev.atof.OpenDashboardAction"
+            text="ATOF: Open Control Center" description="Open the shared local dashboard"/>
   </actions>
 </idea-plugin>

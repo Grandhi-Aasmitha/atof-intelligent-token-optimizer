@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="atof-dashboard-revision" content="vscode-integration-v5">
+<meta name="atof-dashboard-revision" content="jetbrains-integration-v6">
 <title>ATOF · Unified dashboard</title>
 <style>
 :root{font-family:system-ui,Segoe UI,sans-serif;color:#182b43;background:#f3f6fa;line-height:1.45}
@@ -12,13 +12,13 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toolbar button[aria-pressed=true]{background:#1d548f;color:white}.toolbar button:disabled{opacity:.6}@media(max-width:540px){.control-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.split{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body>
-<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: vscode-integration-v5</div></header>
+<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: jetbrains-integration-v6</div></header>
 <main>
 <section id="connection-panel"><h2>ATOF Control Center</h2><p id="connection" class="muted">Checking ATOF…</p><p id="connection-help" class="muted">Waiting for an AI assistant request.</p>
 <div class="toolbar"><strong>Token optimization</strong><button id="control-on" class="secondary" disabled aria-pressed="false">ON</button><button id="control-off" class="secondary" disabled aria-pressed="false">OFF</button></div>
 <div class="control-grid"><div><label for="preferred-ide">Preferred environment</label><select id="preferred-ide" disabled><option value="auto">Automatic / any IDE</option><option value="intellij">IntelliJ IDEA</option><option value="vscode">VS Code</option><option value="eclipse">Eclipse</option><option value="web">Web browser</option><option value="other">Other</option></select></div>
 <div><label for="preferred-agent">Preferred AI agent</label><select id="preferred-agent" disabled><option value="auto">Automatic / any agent</option><option value="copilot">GitHub Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option><option value="chatgpt">ChatGPT</option><option value="gemini">Gemini</option><option value="other">Other</option></select></div></div>
-<p id="control-status" role="status" class="muted">Loading local settings…</p><p class="muted">VS Code extension: use ATOF status bar to open this dashboard. The optional Ask AI with ATOF command prepares input before its own model call; ordinary Copilot/Codex/Claude chat is not intercepted.</p><p class="muted">Preferences do not connect or switch AI clients. ON/OFF applies to updated ATOF request paths; unsupported native clients are unchanged. Automated developer checks remain separate.</p></section>
+<p id="control-status" role="status" class="muted">Loading local settings…</p><p class="muted">JetBrains plugin: open the ATOF tool window for local controls and approved plugin-owned requests. Native AI chat replacement remains unverified.</p><p class="muted">VS Code extension: use ATOF status bar to open this dashboard. The optional Ask AI with ATOF command prepares input before its own model call; ordinary Copilot/Codex/Claude chat is not intercepted.</p><p class="muted">Preferences do not connect or switch AI clients. ON/OFF applies to updated ATOF request paths; unsupported native clients are unchanged. Automated developer checks remain separate.</p></section>
 <section><h2>ATOF — Optimization Report</h2>
 <p id="selected" class="muted">Waiting for an AI assistant request</p><p id="source-label" class="muted"></p><strong id="delivery-label" role="status"></strong>
 <div class="metrics"><div class="metric"><small>Original estimated tokens</small><strong id="before">—</strong><div class="track"><div id="beforebar" class="bar"></div></div></div><div class="metric"><small>Optimized estimated tokens</small><strong id="after">—</strong><div class="track"><div id="afterbar" class="bar after"></div></div></div><div class="metric"><small>Estimated tokens saved</small><strong id="removed">—</strong></div><div class="metric"><small>Reduction</small><strong id="percent">—</strong></div></div>

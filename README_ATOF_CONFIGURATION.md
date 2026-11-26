@@ -74,7 +74,7 @@ See [Phase 2 dashboard guide](docs/PHASE2_REPORT_FIRST_UX.md) for provenance, fe
 
 ## Old dashboard still displayed?
 
-The report-only dashboard shows revision **vscode-integration-v5** in its header.
+The report-only dashboard shows revision **jetbrains-integration-v6** in its header.
 Use PowerShell in the intended checkout, not its parent or a nested older clone:
 
 ~~~powershell
@@ -85,7 +85,7 @@ git pull --ff-only origin feature/phase-1-foundation
 py -3.11 scripts/start_atof.py --port 8081
 ~~~
 
-Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=vscode-integration-v5. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
+Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=jetbrains-integration-v6. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
 
 ## Phase 3 automatic feature detection
 
@@ -102,3 +102,7 @@ The same Control Center and dashboard now report owned API preparation separatel
 ## Phase 6 VS Code extension
 
 Start the existing service on 8081. Build/install the VSIX from ide/vscode using the approved VSCE tool. The ATOF status bar opens the same dashboard; ATOF: Toggle Optimization controls the shared switch. ATOF: Ask AI with ATOF uses a separate approved model request, with optional selected editor text. Optional Copilot MCP registration is separate; do not duplicate existing configuration. See [Phase 6 guide](docs/PHASE6_VSCODE_INTEGRATION.md). No normal-chat interception is claimed.
+
+## Phase 7 JetBrains plugin
+
+Build/install the plugin from ide/intellij using approved Gradle and JDK 21. Open the ATOF tool window for the shared ON/OFF switch and dashboard shortcut. Optional Ask AI uses approved provider API credentials, not native subscriptions. See [Phase 7 guide](docs/PHASE7_JETBRAINS_INTEGRATION.md).
