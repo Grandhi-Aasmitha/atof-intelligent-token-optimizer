@@ -7,6 +7,7 @@ from .analytics import history
 SOURCE_LABELS = {
     "agent_tool": "Agent tool (not verified live)",
     "owned_adapter": "Owned API request (not verified live)",
+    "structured_api": "Structured candidate (caller must apply)",
     "local_api": "Local request",
     "developer_test": "Developer test",
     "synthetic_test": "Synthetic test",
@@ -24,16 +25,21 @@ def feature_states(record=None, *, registry=None, engines=None):
     supported = (agent is None or
                  (transport == "controlled_adapter" and agent == "custom_api") or
                  can_return_candidate(agent, transport, "return_payload"))
+    from .readiness import readiness
+    readiness_by_id = {x['id']:x for x in readiness()['features']}
     result = []
     for f in registry.all():
         executable = f.implemented and engines.supports(f.id)
-        active = executable and supported and f.id in used
-        status = ("planned" if not executable else "used" if active else
-                  "available" if supported else "unavailable_for_agent")
+        info = readiness_by_id.get(f.id, {})
+        level = info.get('readiness','runtime_required')
+        structured = level == 'structured_candidate'
+        active = (executable and supported or structured and transport == 'structured_api') and f.id in used
+        status = ('used' if active else 'structured_available' if structured else 'control_available' if level == 'control' else
+                  'planned' if not executable else 'available' if supported else 'unavailable_for_agent')
         result.append({"id":f.id, "name":f.name, "classification":f.classification,
                        "implemented":f.implemented, "executable":executable,
                        "supported_for_agent":supported if executable else False,
-                       "used":active, "state":status})
+                       "used":active, "state":status, "readiness":level, "scope":info.get("scope","")})
     return result
 
 
@@ -62,7 +68,7 @@ def state(request_id=None):
     data = history(200)
     records = [present(r) for r in data["records"]]
     # Legacy records may be synthetic; never assume live from agent label.
-    agent_records = [r for r in records if r["source_kind"] in ("agent_tool","owned_adapter")]
+    agent_records = [r for r in records if r["source_kind"] in ("agent_tool","owned_adapter","structured_api")]
     latest = agent_records[0] if agent_records else None
     selected = next((r for r in records if r["request_id"] == request_id), None) if request_id else latest
     features = feature_states(selected)
@@ -74,4 +80,5 @@ def state(request_id=None):
         "feature_counts":{"total":len(features), "implemented":sum(f["executable"] for f in features),
                           "used":sum(f["used"] for f in features)},
         "history":records, "provider_savings_verified":False,
+        "readiness_counts":{k:sum(f["readiness"]==k for f in features) for k in ("text_engine","structured_candidate","control","runtime_required")},
     }

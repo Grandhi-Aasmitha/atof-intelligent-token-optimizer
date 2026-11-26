@@ -9,7 +9,9 @@ def test_catalog_states():
     states = feature_states()
     assert len(states) == 48
     assert sum(x["state"] == "available" for x in states) == 7
-    assert sum(x["state"] == "planned" for x in states) == 41
+    assert sum(x["state"] == "planned" for x in states) == 22
+    assert sum(x["state"] == "structured_available" for x in states) == 12
+    assert sum(x["state"] == "control_available" for x in states) == 7
     states = feature_states({"agent":"copilot","transport":"http_api"})
     assert sum(x["state"] == "unavailable_for_agent" for x in states) == 7
     states = feature_states({"agent":"custom_api","transport":"http_api",

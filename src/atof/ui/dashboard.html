@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="atof-dashboard-revision" content="browser-integration-v8">
+<meta name="atof-dashboard-revision" content="feature-readiness-v9">
 <title>ATOF · Unified dashboard</title>
 <style>
 :root{font-family:system-ui,Segoe UI,sans-serif;color:#182b43;background:#f3f6fa;line-height:1.45}
@@ -12,7 +12,7 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toolbar button[aria-pressed=true]{background:#1d548f;color:white}.toolbar button:disabled{opacity:.6}@media(max-width:540px){.control-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.split{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body>
-<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: browser-integration-v8</div></header>
+<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: feature-readiness-v9</div></header>
 <main>
 <section id="connection-panel"><h2>ATOF Control Center</h2><p id="connection" class="muted">Checking ATOF…</p><p id="connection-help" class="muted">Waiting for an AI assistant request.</p>
 <div class="toolbar"><strong>Token optimization</strong><button id="control-on" class="secondary" disabled aria-pressed="false">ON</button><button id="control-off" class="secondary" disabled aria-pressed="false">OFF</button></div>
@@ -25,14 +25,14 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 <p class="muted">Estimated context reduction, not verified provider savings.</p><details><summary>Technical details</summary><p id="details" class="muted"></p></details>
 <h3>Features utilized</h3><div id="applied">No features applied</div>
 </section>
-<section><h2>Feature catalog <small id="catalog-count"></small></h2><details id="feature-panel"><summary>View all 48 features</summary><p class="muted">Used = active for this report. Available = inactive but implemented. Unavailable = not supported on this request path. Planned = not implemented.</p><div id="catalog">Loading feature catalog…</div></details></section>
+<section><h2>Feature catalog <small id="catalog-count"></small></h2><details id="feature-panel"><summary>View all 48 features</summary><p class="muted">Used = applied for this report. Text engines, structured candidates and controls have different execution boundaries. Runtime required = not yet executable. Controls are not counted as token-saving transformations.</p><div id="catalog">Loading feature catalog…</div></details></section>
 <section><h2>Request history and comparison</h2>
 
 <div class="toolbar"><label for="scope">Show</label><select id="scope" style="width:auto"><option value="agent_tool">Agent / owned API requests</option><option value="tests">Developer tests</option><option value="all">All records</option></select><label for="filter">Filter agent</label><select id="filter" style="width:auto"><option value="">All agents</option><option value="custom_api">ATOF API</option><option value="copilot">Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option><option value="chatgpt">OpenAI API</option><option value="gemini">Gemini API</option></select><button class="secondary" id="latest">Follow latest</button><button class="secondary" id="refresh">Refresh</button></div>
 <p id="storage" class="muted"></p><div class="scroll"><table><thead><tr><th>Time</th><th>Agent / source</th><th>Features used</th><th>Estimated saved</th><th>Reduction</th><th>Result</th><th>View</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
 <section><details id="advanced"><summary>Advanced · Developer diagnostics</summary><p class="muted">Optional automated checks for ATOF developers. No manual input is required.</p><details><summary>Phase 1 · integration readiness and delivery validation</summary><p class="muted">Controlled offline receiver test verifies the submitted payload, not native IDE compatibility or model token usage.</p><button id="delivery-verify">Run pre-model OFF / ON verification</button><p id="delivery-result" role="status"></p><div class="scroll"><table><thead><tr><th>Adapter</th><th>Environment</th><th>Status</th></tr></thead><tbody id="adapter-rows"></tbody></table></div></details>
-<details><summary>Developer diagnostics · verify registered optimizers</summary><p class="muted">Separate synthetic fixture tests; not a live request report. Records both arms when analytics is enabled.</p><button id="verify">Run feature verification</button> <button id="detect-verify">Check automatic feature detection</button><p id="detect-status" role="status"></p><p id="verify-status" role="status"></p><div class="scroll"><table><thead><tr><th>Feature</th><th>Result</th><th>Before → after</th><th>Fidelity</th></tr></thead><tbody id="verify-rows"></tbody></table></div></details>
+<details><summary>Developer diagnostics · verify registered optimizers</summary><p class="muted">Separate synthetic fixture tests; not a live request report. Records both arms when analytics is enabled.</p><button id="verify">Run feature verification</button> <button id="detect-verify">Check automatic feature detection</button> <button id="structured-verify">Verify structured optimizers</button><p id="structured-status" role="status"></p><p id="detect-status" role="status"></p><p id="verify-status" role="status"></p><div class="scroll"><table><thead><tr><th>Feature</th><th>Result</th><th>Before → after</th><th>Fidelity</th></tr></thead><tbody id="verify-rows"></tbody></table></div></details>
 <details><summary>Benchmark imports · provider or external upstream</summary><p class="muted">Import the benchmark CLI JSON or the separate upstream token-optimizer-verification.json. Read locally in your browser; not uploaded or stored. External fixture metrics are never mixed into ATOF request totals or catalog activation.</p><label for="benchmark-file">JSON report file</label><input id="benchmark-file" type="file" accept=".json,application/json"><label for="benchmark-json">Or paste report JSON</label><textarea id="benchmark-json"></textarea><button id="benchmark-view">Display comparison</button><p id="benchmark-result" role="status"></p><div id="benchmark-data"></div></details></details></section>
 </main>
 <script>
@@ -50,8 +50,8 @@ const groups={core:'A. Core token optimization',intelligent:'B. Intelligent AI o
 function renderCatalog(){
  const root=$('catalog');root.replaceChildren();
  if(!catalog.length){root.textContent='Feature catalog unavailable';return}
- $('catalog-count').textContent=catalog.length+' total · '+catalog.filter(f=>f.executable).length+' implemented · '+catalog.filter(f=>f.used).length+' used';
- const sections=new Map(), labels={used:'Active · Used',available:'Inactive · Available',unavailable_for_agent:'Inactive · Unavailable for this path',planned:'Planned · Not implemented'};
+ $('catalog-count').textContent=catalog.length+' total · '+catalog.filter(f=>f.executable).length+' text engines · '+catalog.filter(f=>f.readiness==='structured_candidate').length+' structured · '+catalog.filter(f=>f.readiness==='control').length+' controls · '+catalog.filter(f=>f.used).length+' used';
+ const sections=new Map(), labels={used:'Active · Used',available:'Inactive · Available',unavailable_for_agent:'Inactive · Unavailable for this path',planned:'Runtime required · Not executable',structured_available:'Inactive · Structured caller required',control_available:'Control / measurement'};
  for(const f of catalog){const group=f.id.split('.')[0];if(!sections.has(group)){root.append(el('h3',groups[group]||group));const grid=el('div',null,'catalog');root.append(grid);sections.set(group,grid)}
  const card=el('div',null,'feature '+(f.used?'active':f.executable?'inactive':'planned'));
  card.append(el('strong',f.name),el('small',labels[f.state]));card.title=f.id;sections.get(group).append(card)}
@@ -70,7 +70,7 @@ function selectReport(r){
 function row(table,values){const tr=el('tr');for(const val of values){const td=el('td');if(val instanceof Node)td.append(val);else td.textContent=val;tr.append(td)}table.append(tr)}
 function renderHistory(){
  const scope=$('scope').value,agent=$('filter').value;
- const visible=records.filter(r=>(scope==='all'||(scope==='tests'?['developer_test','synthetic_test','controlled_validation'].includes(r.source_kind):['agent_tool','owned_adapter'].includes(r.source_kind)))&&(!agent||r.agent===agent));
+ const visible=records.filter(r=>(scope==='all'||(scope==='tests'?['developer_test','synthetic_test','controlled_validation'].includes(r.source_kind):['agent_tool','owned_adapter','structured_api'].includes(r.source_kind)))&&(!agent||r.agent===agent));
  const body=$('rows');body.replaceChildren();
  for(const r of visible){const info=fromHistory(r),feature=el('span');chips(feature,info.ids);const button=el('button','View','secondary');button.onclick=()=>{selectedId=r.request_id;refresh()};
  row(body,[r.timestamp_utc,agentName(r.agent)+' · '+r.source_label,feature,num(info.removed),pct(info.percent),r.delivery_label,button])}
@@ -109,6 +109,7 @@ function displayBenchmark(r){
 $('benchmark-view').onclick=async()=>{try{const f=$('benchmark-file').files[0];if(f&&f.size>10000000)throw Error('Report exceeds 10 MB');const raw=f?await f.text():$('benchmark-json').value;displayBenchmark(JSON.parse(raw))}catch(e){$('benchmark-data').replaceChildren();$('benchmark-result').textContent='Import failed: '+e.message}};
 async function loadAdapters(){try{const data=await j('/v1/integrations/capabilities');$('adapter-rows').replaceChildren();for(const a of data.adapters)row($('adapter-rows'),[a.id,a.environment,a.status+' · '+a.scope])}catch(e){$('delivery-result').textContent='Integration inventory unavailable: '+e.message}}
 $('delivery-verify').onclick=async()=>{const b=$('delivery-verify');b.disabled=true;$('delivery-result').textContent='Running controlled validation…';try{const v=await post('/v1/integrations/verify',{});$('delivery-result').textContent=(v.passed?'PASS':'FAIL')+' · complete prompt estimates '+num(v.full_prompt_before)+' → '+num(v.full_prompt_after)+' · saved '+num(v.full_prompt_estimated_reduction)+' ('+pct(v.full_prompt_estimated_reduction_percent)+') · offline receiver, no model calls';await refresh()}catch(e){$('delivery-result').textContent='Validation failed: '+e.message}finally{b.disabled=false}};
+$('structured-verify').onclick=async()=>{const b=$('structured-verify');b.disabled=true;$('structured-status').textContent='Checking structured fixtures…';try{const r=await post('/v1/verification/structured',{});$('structured-status').textContent=r.passed+'/'+r.total+' structured checks passed · local estimates only';$('verify-rows').replaceChildren();for(const x of r.results)row($('verify-rows'),[x.feature,x.passed?'PASS':'FAIL',num(x.before)+' → '+num(x.after),'structural']);}catch(e){$('structured-status').textContent='Check failed: '+e.message}finally{b.disabled=false}};
 let control=null, controlBusy=false, controlReading=false, controlGeneration=0;
 function paintControl(data){
  control=data.settings;

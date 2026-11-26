@@ -99,3 +99,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 9
 
 [Browser integration](docs/PHASE9_BROWSER_INTEGRATION.md): permission-free Chrome/Edge shortcut, optional explicitly authorized browser-owned API client, one dashboard. Native web chat interception is not implemented.
+
+## Revised roadmap — Phase 10 (partial)
+
+[Structured optimizers and all-48 readiness](docs/PHASE10_FEATURE_IMPLEMENTATION.md). Seven text engines, twelve structured candidate features, seven bounded controls, 22 runtime-required capabilities. Phase 10 acceptance remains open.

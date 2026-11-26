@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'browser-integration-v8'
+DASHBOARD_REVISION = 'feature-readiness-v9'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -235,3 +235,27 @@ def browser_ask(payload: BrowserRequest, request: Request):
         raise HTTPException(403,"Browser provider disabled, unconfigured, or consent missing") from None
     except ValueError:
         raise HTTPException(400,"Invalid browser request") from None
+
+
+from .structured import StructuredRequest
+
+@app.get('/v1/features/readiness')
+def feature_readiness():
+    from .readiness import readiness
+    return readiness()
+
+@app.post('/v1/structured/optimize')
+def structured_optimize(payload: StructuredRequest, request: Request):
+    from .structured import optimize_structured
+    _local_control_access(request)
+    if request.headers.get("x-atof-structured") != "1":
+        raise HTTPException(403,"Explicit structured caller header required")
+    try:
+        return optimize_structured(payload)
+    except PermissionError:
+        raise HTTPException(403,"Structured input authorization required") from None
+
+@app.post('/v1/verification/structured')
+def verify_structured_features():
+    from .verify_structured import verify
+    return verify()

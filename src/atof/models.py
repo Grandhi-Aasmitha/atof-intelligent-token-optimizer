@@ -39,7 +39,7 @@ class FeatureDecision(BaseModel):
 class OptimizationReport(BaseModel):
     schema_version: str = "atof-report/1"
     control_policy: Literal['enabled','disabled','request_disabled','settings_unavailable','diagnostic'] = 'enabled'
-    source_kind: Literal["local_api", "agent_tool", "developer_test", "synthetic_test", "controlled_validation", "owned_adapter"] = "local_api"
+    source_kind: Literal["local_api", "agent_tool", "developer_test", "synthetic_test", "controlled_validation", "owned_adapter", "structured_api"] = "local_api"
     request_id: str
     intent: str
     agent: str
@@ -58,7 +58,7 @@ class OptimizationReport(BaseModel):
     estimated_reduction_percent: float | None = None
     measurement_method: str = "local_heuristic_estimate"
     provider_usage: dict | None = None
-    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter", "owned_adapter"] = "http_api"
+    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter", "owned_adapter", "structured_api"] = "http_api"
     fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
     fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
     execution_duration_ms: float | None = None
