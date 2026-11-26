@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension point="org.eclipse.ui.views">
+    <category id="dev.atof.eclipse.category" name="ATOF"/>
+    <view id="dev.atof.eclipse.control" name="ATOF Control Center" category="dev.atof.eclipse.category" class="dev.atof.eclipse.ControlView" restorable="true"/>
+  </extension>
+</plugin>

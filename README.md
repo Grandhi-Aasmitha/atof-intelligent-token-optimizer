@@ -91,3 +91,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 7
 
 [JetBrains integration](docs/PHASE7_JETBRAINS_INTEGRATION.md): shared controls, one dashboard, opt-in plugin-owned API request. Native AI assistant interception remains unverified.
+
+## Revised roadmap — Phase 8
+
+[Eclipse integration](docs/PHASE8_ECLIPSE_INTEGRATION.md): native control view, shared policy and optional owned API preparation, Tycho p2 build. Native assistant interception remains unverified.

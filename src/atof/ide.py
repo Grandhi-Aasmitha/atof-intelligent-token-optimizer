@@ -5,7 +5,7 @@ from .models import OptimizeRequest, OptimizeResponse
 from .service import optimize
 
 class IDERequest(BaseModel):
-    ide: Literal['vscode','intellij']
+    ide: Literal['vscode','intellij','eclipse']
     task: str = Field(min_length=1,max_length=20000)
     text: str = Field(min_length=1,max_length=300000)
     path_label: str = Field(default='selection.txt',max_length=1024)

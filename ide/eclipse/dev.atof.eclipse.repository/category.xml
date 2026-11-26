@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+  <feature id="dev.atof.eclipse.feature" version="0.9.0"><category name="atof"/></feature>
+  <category-def name="atof" label="ATOF"/>
+  <repository-reference location="https://download.eclipse.org/releases/2025-12/202512101000/" enabled="true"/>
+</site>

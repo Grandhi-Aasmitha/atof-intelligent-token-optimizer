@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="dev.atof.eclipse.feature" label="ATOF Control Center" version="0.9.0" provider-name="ATOF Local">
+  <description>Shared local controls and optional explicit plugin-owned model requests.</description>
+  <license>Internal use subject to repository and organization approval.</license>
+  <plugin id="dev.atof.eclipse" version="0.9.0" download-size="0" install-size="0" unpack="false"/>
+</feature>

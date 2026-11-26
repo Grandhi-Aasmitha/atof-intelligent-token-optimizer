@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'jetbrains-integration-v6'
+DASHBOARD_REVISION = 'eclipse-integration-v7'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}

@@ -1,0 +1,5 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>dev.atof</groupId><artifactId>eclipse-parent</artifactId><version>0.9.0</version></parent>
+  <artifactId>dev.atof.eclipse</artifactId><packaging>eclipse-plugin</packaging>
+</project>
