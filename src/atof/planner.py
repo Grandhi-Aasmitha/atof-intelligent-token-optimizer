@@ -48,7 +48,8 @@ def _plan(request: OptimizeRequest, engines, request_analysis_evidence: frozense
         available = [s for s in available if s.feature_id == request.feature_override]
 
     for spec in available:
-        if any(f in selected for f in spec.conflicts):
+        if any(f in selected for f in spec.conflicts) or any(
+                spec.feature_id in engines.spec(f).conflicts for f in selected):
             decisions.append(FeatureDecision(feature_id=spec.feature_id, status='skipped',
                                             reason='conflicts_with_selected_strategy'))
         elif not set(spec.depends_on).issubset(selected):

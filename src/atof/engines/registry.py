@@ -42,9 +42,21 @@ class EngineRegistry:
                 raise ValueError(f'plugin requires a fidelity validator: {engine.feature_id}')
             self._engines[engine.feature_id] = engine
             self._specs[engine.feature_id] = spec
+        # Validate the registered dependency graph before accepting requests.
+        self.strategies()
 
     def strategies(self):
-        return sorted(self._specs.values(), key=lambda s: (-s.priority, s.feature_id))
+        # Stable priority among ready plugins; a dependency always precedes its dependent.
+        pending = dict(self._specs)
+        ordered = []
+        while pending:
+            ready = [s for s in pending.values() if not set(s.depends_on).intersection(pending)]
+            if not ready:
+                raise ValueError('cyclic optimizer dependencies')
+            spec = min(ready, key=lambda s: (-s.priority, s.feature_id))
+            ordered.append(spec)
+            del pending[spec.feature_id]
+        return ordered
 
     def spec(self, feature_id):
         return self._specs[feature_id]
