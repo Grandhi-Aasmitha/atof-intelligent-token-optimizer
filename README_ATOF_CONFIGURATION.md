@@ -8,8 +8,9 @@ Approved Git, Python 3.11+, VS Code, repository access and an approved MCP-capab
 
 ## 3. Install on Windows
 Open PowerShell in your projects directory.
-~~~powershell
 git clone 
+~~~powershell
+
 py -3.11 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ~~~
