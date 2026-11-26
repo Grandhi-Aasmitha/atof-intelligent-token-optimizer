@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from urllib.parse import urlsplit
+from .control import ControlSettings, snapshot, save_settings
 from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'report-only-v2'
+DASHBOARD_REVISION = 'control-center-v3'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -118,3 +120,34 @@ def detect_features(payload: OptimizeRequest):
 def verify_dynamic_detection():
     from .detection import verify_detection
     return verify_detection()
+
+def _local_control_access(request: Request, *, write=False):
+    # Browser writes must be same-origin and carry a non-simple custom header.
+    # No cross-origin access or DNS-rebinding host names. Loopback only.
+    try:
+        host = urlsplit("//" + request.headers.get("host", "")).hostname
+    except ValueError:
+        host = None
+    if host not in ("127.0.0.1", "localhost", "::1"):
+        raise HTTPException(403, "Local control endpoint requires a loopback host")
+    origin = request.headers.get("origin")
+    if origin and origin != str(request.base_url).rstrip("/"):
+        raise HTTPException(403, "Cross-origin control access denied")
+    if write and request.headers.get("x-atof-control") != "1":
+        raise HTTPException(403, "Explicit local control header required")
+
+
+@app.get('/v1/control')
+def get_control(request: Request):
+    _local_control_access(request)
+    return snapshot()
+
+
+@app.put('/v1/control')
+def put_control(settings: ControlSettings, request: Request):
+    _local_control_access(request, write=True)
+    try:
+        save_settings(settings)
+    except (OSError, ValueError, __import__('sqlite3').Error):
+        raise HTTPException(503, "Could not save local control settings") from None
+    return snapshot()

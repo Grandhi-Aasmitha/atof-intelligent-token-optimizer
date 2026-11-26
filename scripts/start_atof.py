@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DASHBOARD_REVISION = "report-only-v2"
+DASHBOARD_REVISION = "control-center-v3"
 
 
 def require_free_port(port):
@@ -74,7 +74,12 @@ def main(argv=None):
                 '--analytics', '--workspace', args.workspace.resolve())
             print('Copilot workspace configured. Start/approve MCP in the IDE; live discovery is not verified.', flush=True)
         if args.verify:
-            run(python, '-m', 'pytest', '-q')
+            # Use isolated settings so a user's OFF preference does not alter regression expectations.
+            import tempfile
+            with tempfile.TemporaryDirectory(prefix='atof-verification-') as temp:
+                test_env = {**env, 'ATOF_CONTROL_DB': str(Path(temp)/'control.sqlite'),
+                            'ATOF_ANALYTICS_DB': str(Path(temp)/'analytics.sqlite')}
+                run(python, '-m', 'pytest', '-q', env=test_env)
             run(python, '-m', 'atof.verify_platform')
             run(python, '-m', 'atof.detection')
             run(python, '-m', 'atof.mcp_smoke', '--agent', 'all')

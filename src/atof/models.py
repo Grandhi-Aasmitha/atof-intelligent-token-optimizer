@@ -38,6 +38,7 @@ class FeatureDecision(BaseModel):
 
 class OptimizationReport(BaseModel):
     schema_version: str = "atof-report/1"
+    control_policy: Literal['enabled','disabled','request_disabled','settings_unavailable','diagnostic'] = 'enabled'
     source_kind: Literal["local_api", "agent_tool", "developer_test", "synthetic_test", "controlled_validation"] = "local_api"
     request_id: str
     intent: str

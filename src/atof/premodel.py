@@ -74,7 +74,9 @@ def integration_capabilities():
                    ("vscode_copilot", "copilot", "VS Code"),
                    ("vscode_codex", "codex", "VS Code"),
                    ("vscode_claude", "claude", "VS Code"),
+                   ("eclipse_copilot", "copilot", "Eclipse"),
                    ("chatgpt_web", "chatgpt", "Web"),
+                   ("gemini_web", "gemini", "Web"),
                    ("other_agent", "other", "Other"))]
         ],
         "automatic_interception_verified": False,

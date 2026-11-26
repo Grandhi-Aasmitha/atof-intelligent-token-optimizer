@@ -75,3 +75,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 3
 
 [Dynamic feature detection](docs/PHASE3_DYNAMIC_DETECTION.md): registered plugin applicability and relevance, read-only detection API, unforced OFF/ON fixture checks. No new dashboard or manual form. All 48 remain in scope.
+
+## Revised roadmap — Phase 4
+
+[Universal local service and Control Center](docs/PHASE4_UNIVERSAL_LOCAL_SERVICE.md). Persistent shared ON/OFF, IDE/agent preferences and one report-only dashboard. Native integration verification remains pending.

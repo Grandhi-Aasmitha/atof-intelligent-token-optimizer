@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="atof-dashboard-revision" content="report-only-v2">
+<meta name="atof-dashboard-revision" content="control-center-v3">
 <title>ATOF · Unified dashboard</title>
 <style>
 :root{font-family:system-ui,Segoe UI,sans-serif;color:#182b43;background:#f3f6fa;line-height:1.45}
@@ -9,11 +9,16 @@ main{max-width:1050px;margin:auto;padding:18px}section{background:#fff;border:1p
 label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,select,textarea{font:inherit;max-width:100%;width:100%;padding:9px;border:1px solid #afbdce;border-radius:6px;background:white;color:#182b43}textarea{min-height:105px;resize:vertical}input[type=checkbox],input[type=file]{width:auto}button{font:inherit;font-size:13px;font-weight:650;cursor:pointer;background:#1d548f;color:white;border:1px solid #1d548f;border-radius:6px;padding:9px 13px}button.secondary{background:white;color:#1d548f}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #91b9ef}
 .track{height:10px;background:#edf1f6;border-radius:6px;overflow:hidden;margin-top:6px}.bar{height:100%;background:#2672bb;width:0}.after{background:#16805d}
 .chip{display:inline-block;border:1px solid #b6dcca;background:#eaf7ef;color:#155e41;border-radius:20px;font-size:12px;padding:4px 9px;margin:2px}.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:7px}.feature{border:1px solid #dfe5ec;border-radius:8px;padding:10px;background:#f9fafb;min-height:75px;font-size:13px}.feature.active{border-color:#39906c;background:#e7f5ed}.feature.planned{color:#687484;background:#f4f5f7}.feature strong{display:block}.feature small{display:block;margin-top:5px}.feature.active small{color:#155e41;font-weight:700}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:9px;border-bottom:1px solid #e1e6ed;text-align:left;vertical-align:top}td{overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f8;padding:10px;max-height:300px;overflow:auto}summary{cursor:pointer;font-weight:650}.status{min-height:20px;color:#465b70}.danger{color:#a52c25}
+.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toolbar button[aria-pressed=true]{background:#1d548f;color:white}.toolbar button:disabled{opacity:.6}@media(max-width:540px){.control-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.split{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body>
-<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: report-only-v2</div></header>
+<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: control-center-v3</div></header>
 <main>
-<section id="connection-panel"><h2 id="connection">Checking ATOF…</h2><p id="connection-help" class="muted">Waiting for an AI assistant request.</p></section>
+<section id="connection-panel"><h2>ATOF Control Center</h2><p id="connection" class="muted">Checking ATOF…</p><p id="connection-help" class="muted">Waiting for an AI assistant request.</p>
+<div class="toolbar"><strong>Token optimization</strong><button id="control-on" class="secondary" disabled aria-pressed="false">ON</button><button id="control-off" class="secondary" disabled aria-pressed="false">OFF</button></div>
+<div class="control-grid"><div><label for="preferred-ide">Preferred environment</label><select id="preferred-ide" disabled><option value="auto">Automatic / any IDE</option><option value="intellij">IntelliJ IDEA</option><option value="vscode">VS Code</option><option value="eclipse">Eclipse</option><option value="web">Web browser</option><option value="other">Other</option></select></div>
+<div><label for="preferred-agent">Preferred AI agent</label><select id="preferred-agent" disabled><option value="auto">Automatic / any agent</option><option value="copilot">GitHub Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option><option value="chatgpt">ChatGPT</option><option value="gemini">Gemini</option><option value="other">Other</option></select></div></div>
+<p id="control-status" role="status" class="muted">Loading local settings…</p><p class="muted">Preferences do not connect or switch AI clients. ON/OFF applies to updated ATOF request paths; unsupported native clients are unchanged. Automated developer checks remain separate.</p></section>
 <section><h2>ATOF — Optimization Report</h2>
 <p id="selected" class="muted">Waiting for an AI assistant request</p><p id="source-label" class="muted"></p><strong id="delivery-label" role="status"></strong>
 <div class="metrics"><div class="metric"><small>Original estimated tokens</small><strong id="before">—</strong><div class="track"><div id="beforebar" class="bar"></div></div></div><div class="metric"><small>Optimized estimated tokens</small><strong id="after">—</strong><div class="track"><div id="afterbar" class="bar after"></div></div></div><div class="metric"><small>Estimated tokens saved</small><strong id="removed">—</strong></div><div class="metric"><small>Reduction</small><strong id="percent">—</strong></div></div>
@@ -104,5 +109,30 @@ function displayBenchmark(r){
 $('benchmark-view').onclick=async()=>{try{const f=$('benchmark-file').files[0];if(f&&f.size>10000000)throw Error('Report exceeds 10 MB');const raw=f?await f.text():$('benchmark-json').value;displayBenchmark(JSON.parse(raw))}catch(e){$('benchmark-data').replaceChildren();$('benchmark-result').textContent='Import failed: '+e.message}};
 async function loadAdapters(){try{const data=await j('/v1/integrations/capabilities');$('adapter-rows').replaceChildren();for(const a of data.adapters)row($('adapter-rows'),[a.id,a.environment,a.status+' · '+a.scope])}catch(e){$('delivery-result').textContent='Integration inventory unavailable: '+e.message}}
 $('delivery-verify').onclick=async()=>{const b=$('delivery-verify');b.disabled=true;$('delivery-result').textContent='Running controlled validation…';try{const v=await post('/v1/integrations/verify',{});$('delivery-result').textContent=(v.passed?'PASS':'FAIL')+' · complete prompt estimates '+num(v.full_prompt_before)+' → '+num(v.full_prompt_after)+' · saved '+num(v.full_prompt_estimated_reduction)+' ('+pct(v.full_prompt_estimated_reduction_percent)+') · offline receiver, no model calls';await refresh()}catch(e){$('delivery-result').textContent='Validation failed: '+e.message}finally{b.disabled=false}};
-loadAdapters();refresh();setInterval(refresh,5000);
+let control=null, controlBusy=false, controlReading=false;
+function paintControl(data){
+ control=data.settings;
+ $('control-on').setAttribute('aria-pressed',String(control.enabled));
+ $('control-off').setAttribute('aria-pressed',String(!control.enabled));
+ $('preferred-ide').value=control.preferred_ide;$('preferred-agent').value=control.preferred_agent;
+ for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=controlBusy||!data.available;
+ // A broken store can be repaired locally; do not silently enable optimization.
+ $('control-status').textContent=data.available?(control.enabled?'Optimization ON · applies to supported ATOF requests':'Optimization OFF · original context retained'):(data.error||'Settings unavailable');
+}
+async function readControl(){
+ if(controlBusy||controlReading)return;controlReading=true;
+ try{const data=await j('/v1/control');if(!controlBusy)paintControl(data)}
+ catch(e){if(!controlBusy){for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;$('control-status').textContent='Control Center unavailable: '+e.message}}
+ finally{controlReading=false}
+}
+async function changeControl(patch){
+ if(controlBusy||!control)return;
+ controlBusy=true;for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;
+ try{const data=await j('/v1/control',{method:'PUT',headers:{'Content-Type':'application/json','X-ATOF-Control':'1'},body:JSON.stringify({...control,...patch})});controlBusy=false;paintControl(data)}
+ catch(e){controlBusy=false;await readControl();$('control-status').textContent='Change not confirmed: '+e.message}
+}
+$('control-on').onclick=()=>changeControl({enabled:true});$('control-off').onclick=()=>changeControl({enabled:false});
+$('preferred-ide').onchange=()=>changeControl({preferred_ide:$('preferred-ide').value});
+$('preferred-agent').onchange=()=>changeControl({preferred_agent:$('preferred-agent').value});
+loadAdapters();refresh();readControl();setInterval(()=>{refresh();readControl()},5000);
 </script></body></html>

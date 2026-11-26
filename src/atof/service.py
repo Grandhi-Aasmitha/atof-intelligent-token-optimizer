@@ -14,6 +14,9 @@ _engines = EngineRegistry()
 def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_metrics: bool = True, source_kind: str | None = None) -> OptimizeResponse:
     if transport not in ("http_api", "mcp_explicit"):
         raise ValueError("unsupported internal execution transport")
+    from .control import effective_request
+    provenance = source_kind or ('agent_tool' if transport == 'mcp_explicit' else 'local_api')
+    request, policy = effective_request(request, diagnostic=provenance in ('developer_test', 'synthetic_test', 'controlled_validation'))
     analysis = analyze(request)
     decisions = select(request, analysis, _registry, _engines, transport=transport)
     sections = source_sections(request)
@@ -22,7 +25,9 @@ def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_me
                                 agent=request.agent,
                                 original_estimated_tokens=estimate_text(original or request.task),
                                 decisions=decisions, execution_transport=transport,
-                                source_kind=source_kind or ("agent_tool" if transport == "mcp_explicit" else "local_api"))
+                                source_kind=provenance, control_policy=policy)
+    if policy in ('disabled', 'settings_unavailable'):
+        report.warnings.append('ATOF optimization is disabled by local control settings; retain original evidence.')
     report.context_breakdown = {key: estimate_text(value) for key, value in sections.items()}
     report.token_budget = request.token_budget
     response = run_pipeline(request, decisions, report, _engines)

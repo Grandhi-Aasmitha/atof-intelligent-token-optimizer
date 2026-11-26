@@ -6,7 +6,9 @@ from .planner import select
 from .models import OptimizeRequest
 
 
-def detect(request: OptimizeRequest, *, transport="http_api", registry=None, engines=None):
+def detect(request: OptimizeRequest, *, transport="http_api", registry=None, engines=None, diagnostic=False):
+    from .control import effective_request
+    request, policy = effective_request(request, diagnostic=diagnostic)
     registry = registry if registry is not None else FeatureRegistry()
     engines = engines if engines is not None else EngineRegistry()
     analysis = analyze(request)
@@ -18,7 +20,7 @@ def detect(request: OptimizeRequest, *, transport="http_api", registry=None, eng
             "catalog_count":len(registry.all()), "registered_count":len(engines.capabilities()),
             "selected_features":[d.feature_id for d in decisions if d.status=="selected"],
             "decisions":[d.model_dump() for d in decisions],
-            "optimization_enabled":request.optimization_enabled,
+            "optimization_enabled":request.optimization_enabled, "control_policy":policy,
             "executed":False, "provider_savings_verified":False}
 
 
@@ -30,7 +32,7 @@ def verify_detection():
     results = []
     for feature, data, anchors in fixtures():
         request = OptimizeRequest(**data)
-        plan = detect(request)
+        plan = detect(request, diagnostic=True)
         off = optimize(request.model_copy(update={"optimization_enabled":False}), source_kind="synthetic_test")
         on = applied_response(optimize(request, source_kind="synthetic_test"))
         r = on.report
