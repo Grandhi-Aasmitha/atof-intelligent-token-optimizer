@@ -9,8 +9,7 @@ Approved Git, Python 3.11+, VS Code, repository access and an approved MCP-capab
 ## 3. Install on Windows
 Open PowerShell in your projects directory.
 ~~~powershell
-git clone -b feature/phase-1-foundation https://github.com/Grandhi-Aasmitha/atof-intelligent-token-optimizer.git
-cd atof-intelligent-token-optimizer
+git clone 
 py -3.11 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ~~~
