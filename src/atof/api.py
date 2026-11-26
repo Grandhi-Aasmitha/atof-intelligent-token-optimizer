@@ -5,10 +5,14 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
+DASHBOARD_REVISION = 'report-only-v2'
+NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma':'no-cache', 'Expires':'0',
+                    'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
 
 @app.get('/health')
 def health():
-    return {'status':'ok','phase':8}
+    return {'status':'ok','phase':8,'dashboard_revision':DASHBOARD_REVISION}
 
 @app.get('/v1/features')
 def features():
@@ -51,7 +55,8 @@ from .analytics import history as analytics_history, summary as analytics_summar
 
 @app.get('/dashboard',response_class=HTMLResponse,include_in_schema=False)
 def dashboard():
-    return package_files('atof').joinpath('ui/dashboard.html').read_text(encoding='utf-8')
+    return HTMLResponse(package_files('atof').joinpath('ui/dashboard.html').read_text(encoding='utf-8'),
+                        headers=NO_CACHE_HEADERS)
 
 @app.get('/v1/analytics/history')
 def dashboard_history(limit:int=50):

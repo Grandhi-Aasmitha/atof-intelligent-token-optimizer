@@ -71,3 +71,18 @@ Token counts are local estimates, not actual provider savings. Actual savings ne
 Expand Phase 1 · integration readiness and delivery validation in the same dashboard and run the controlled OFF / ON test. Whole-prompt estimates include framing; native agent/model consumption is not verified. See [Phase 1 guide](docs/PHASE1_INTEGRATION_FOUNDATION.md) for optional approved provider testing and acceptance gates.
 
 See [Phase 2 dashboard guide](docs/PHASE2_REPORT_FIRST_UX.md) for provenance, feature state and test instructions.
+
+## Old dashboard still displayed?
+
+The report-only dashboard shows revision **report-only-v2** in its header.
+Use PowerShell in the intended checkout, not its parent or a nested older clone:
+
+~~~powershell
+git rev-parse --show-toplevel
+git remote -v
+git branch --show-current
+git pull --ff-only origin feature/phase-1-foundation
+py -3.11 scripts/start_atof.py --port 8081
+~~~
+
+Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=report-only-v2. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
