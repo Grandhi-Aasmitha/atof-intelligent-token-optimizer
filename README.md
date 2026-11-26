@@ -63,3 +63,7 @@ Run `python -m atof.verify_platform` or use **Run feature verification** in the 
 ## New user setup
 
 Start with the [ATOF Configuration and User Guide](README_ATOF_CONFIGURATION.md) for installation, agent setup, daily usage and end-to-end validation.
+
+## Cross-platform roadmap — Phase 1
+
+See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDATION.md). Start with `py -3.11 scripts/start_atof.py --verify`. The unified dashboard includes an offline controlled pre-model delivery verification. Live IDE integration remains subject to runtime validation.

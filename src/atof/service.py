@@ -11,7 +11,7 @@ from .orchestrator import run_pipeline, source_sections, compose
 _registry = FeatureRegistry()
 _engines = EngineRegistry()
 
-def optimize(request: OptimizeRequest, *, transport: str = "http_api") -> OptimizeResponse:
+def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_metrics: bool = True) -> OptimizeResponse:
     if transport not in ("http_api", "mcp_explicit"):
         raise ValueError("unsupported internal execution transport")
     analysis = analyze(request)
@@ -33,7 +33,8 @@ def optimize(request: OptimizeRequest, *, transport: str = "http_api") -> Optimi
         response.report.delivery_status = "mcp_tool_result_returned"
     try:
         from .analytics import record
-        record(response)
+        if record_metrics:
+            record(response)
     except (OSError, ValueError, RuntimeError, __import__('sqlite3').Error):
         pass
     return response

@@ -38,6 +38,7 @@ def main(argv=None):
             run(python, '-m', 'pytest', '-q')
             run(python, '-m', 'atof.verify_platform')
             run(python, '-m', 'atof.mcp_smoke', '--agent', 'all')
+            run(python, '-m', 'atof.premodel')
         if args.setup_only:
             print('ATOF setup complete.', flush=True)
             return 0

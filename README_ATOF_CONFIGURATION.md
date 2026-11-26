@@ -68,3 +68,7 @@ If the MCP tool is missing, check workspace root, workspace trust, organizationa
 If a virtual environment is missing, the launcher creates it. If the port is occupied use --port 8081. If history is empty check analytics is enabled for both MCP and dashboard, with the same profile/database. ATOF analytics is opt-in metadata only. Do not commit personal paths or credentials; use authorized evidence and keep the unauthenticated service on loopback.
 
 Token counts are local estimates, not actual provider savings. Actual savings need full workflow usage receipts, repeated matched trials and quality checks. The external upstream compressor is separate pending license review. See [main README](README.md).
+
+## Phase 1 delivery validation
+
+Expand Phase 1 · integration readiness and delivery validation in the same dashboard and run the controlled OFF / ON test. Whole-prompt estimates include framing; native agent/model consumption is not verified. See [Phase 1 guide](docs/PHASE1_INTEGRATION_FOUNDATION.md) for optional approved provider testing and acceptance gates.

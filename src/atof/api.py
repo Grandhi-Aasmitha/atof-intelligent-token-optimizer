@@ -82,3 +82,14 @@ def compare_request(payload: OptimizeRequest):
     off = applied_response(optimize(payload.model_copy(update={'optimization_enabled':False, 'execute':True})))
     on = applied_response(optimize(payload.model_copy(update={'optimization_enabled':True, 'execute':True})))
     return {'off':off, 'on':on, 'measurement':'local_heuristic_estimate', 'provider_savings_verified':False}
+
+@app.get('/v1/integrations/capabilities')
+def integration_inventory():
+    from .premodel import integration_capabilities
+    return integration_capabilities()
+
+@app.post('/v1/integrations/verify')
+def verify_controlled_delivery():
+    """Fixed synthetic evidence only; never invokes an external provider."""
+    from .premodel import verify
+    return verify()
