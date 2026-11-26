@@ -42,7 +42,11 @@ def test_report_first_and_test_isolation(tmp_path, monkeypatch):
     assert selected["selected"]["source_kind"] == "developer_test"
     assert "heartbeat ok" not in json.dumps(selected)
     html = client.get("/dashboard").text
-    assert html.index("ATOF — Optimization Report") < html.index("Advanced · Developer diagnostics") < html.index("Manual optimization test")
+    assert html.index("ATOF — Optimization Report") < html.index("Advanced · Developer diagnostics")
+    for removed in ("Manual optimization test", "Test an optimization request", "Agent for local test", "Authorized evidence type", "Load synthetic example", 'id="evidence"', 'id="task"', 'id="optimize"'):
+        assert removed not in html
+    assert "Run pre-model OFF / ON verification" in html
+    assert "Run feature verification" in html
     assert '<details id="advanced">' in html
 
 

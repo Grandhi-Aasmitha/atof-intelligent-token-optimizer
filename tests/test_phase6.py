@@ -11,8 +11,8 @@ client=TestClient(app)
 def test_dashboard_is_rendered_and_caveated():
     r=client.get('/dashboard')
     assert r.status_code==200
-    assert 'ATOF' in r.text and 'not provider-measured savings' in r.text
-    assert 'Original tokens' in r.text and 'Optimized tokens' in r.text
+    assert 'ATOF' in r.text and 'not verified provider savings' in r.text
+    assert 'Original estimated tokens' in r.text and 'Optimized estimated tokens' in r.text
 
 def test_persistence_disabled_by_default(monkeypatch,tmp_path):
     monkeypatch.delenv('ATOF_ANALYTICS_ENABLED',raising=False)

@@ -32,7 +32,7 @@ Optional flags: --verify runs regression tests, local feature verification and l
 
 Open the dashboard to view the latest agent-tool request, token estimates and features used. If no approved integration is verified, the page says so. No need to type prompts or select evidence on the dashboard. The catalog expands to all 48 features. History separates developer tests from agent-tool requests; choose a record and View to inspect it. Follow latest restores the default report.
 
-For developer testing only, expand Advanced · Developer diagnostics. Run a local example, compare OFF / ON, verify features or import a benchmark there. These are not proof of live agent optimization.
+For developer testing only, expand Advanced · Developer diagnostics. Run the automated pre-model OFF / ON check, verify features or import a benchmark there. The manual optimization form has been removed entirely; developers can still use the existing diagnostic API for custom tests. These are not proof of live agent optimization.
 
 ## 4. Live Copilot test
 
@@ -54,7 +54,7 @@ Check actual tool output for mcp_tool_result_returned, reduced context and codin
 
 Use the same engine with each approved MCP client. For Codex IDE Chat or Claude configure the installed virtual-environment Python executable with args -m atof.mcp_server --agent codex (or claude), plus ATOF_ANALYTICS_ENABLED=1. For Copilot in IntelliJ use copilot in its supported MCP configuration. Restart the client and verify direct invocation. No Codex CLI is required. ChatGPT Web needs an approved authenticated remote MCP adapter, not implemented here. Custom apps can call the local REST API; see http://127.0.0.1:8080/docs.
 
-Agent selection on the dashboard does not switch or connect an IDE. Agent-labelled HTTP requests remain observe-only. Actual MCP clients must supply authorized evidence.
+The dashboard identifies the recorded agent; it does not switch or connect an IDE. Agent-labelled HTTP requests remain observe-only. Actual MCP clients must supply authorized evidence.
 
 ## 6. Verification and troubleshooting
 
