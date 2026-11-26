@@ -91,5 +91,10 @@
   },
   "categories": [
     "Other"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Grandhi-Aasmitha/atof-intelligent-token-optimizer.git",
+    "directory": "ide/vscode"
+  }
 }

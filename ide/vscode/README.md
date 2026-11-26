@@ -11,4 +11,4 @@ For build, use Node.js and an approved installed @vscode/vsce. In this directory
 
 ## Prebuilt packages (recommended for installation)
 
-Use [the prebuilt package guide](../../docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.
+Use [the prebuilt package guide](https://github.com/Grandhi-Aasmitha/atof-intelligent-token-optimizer/blob/feature/phase-1-foundation/docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.
