@@ -107,3 +107,14 @@ def diagnostic_optimize(payload: OptimizeRequest):
 def dashboard_state(request_id: str | None = None):
     from .feature_state import state
     return state(request_id)
+
+@app.post('/v1/detect')
+def detect_features(payload: OptimizeRequest):
+    """Read-only planning diagnostics. No execution, storage or model calls."""
+    from .detection import detect
+    return detect(payload)
+
+@app.post('/v1/verification/detection')
+def verify_dynamic_detection():
+    from .detection import verify_detection
+    return verify_detection()

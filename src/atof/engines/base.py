@@ -18,6 +18,8 @@ class PluginSpec:
     depends_on: tuple[str, ...] = ()
     validator: Callable[[str, str], bool] | None = None
     minimum_items: int = 1
+    task_pattern: str | None = None
+    applicable: Callable[[OptimizeRequest], bool] | None = None
 
 class OptimizationEngine(Protocol):
     feature_id: str

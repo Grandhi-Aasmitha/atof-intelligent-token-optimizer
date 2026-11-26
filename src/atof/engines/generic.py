@@ -49,7 +49,7 @@ def restores(original: str, candidate: str) -> bool:
 
 class GenericContextEngine:
     feature_id = 'core.context'
-    spec = PluginSpec(feature_id, 'context', 50, validator=restores)
+    spec = PluginSpec(feature_id, 'context', 50, validator=restores, task_pattern=r'\b(context|summari[sz]e|report)\b')
 
     def optimize(self, request):
         original = getattr(request, self.spec.evidence)
@@ -59,4 +59,4 @@ class GenericContextEngine:
 
 class GenericToolOutputEngine(GenericContextEngine):
     feature_id = 'agent.tool_output'
-    spec = PluginSpec(feature_id, 'tool_output', 95, validator=restores)
+    spec = PluginSpec(feature_id, 'tool_output', 95, validator=restores, task_pattern=r'\b(tool output|command output|terminal output)\b')

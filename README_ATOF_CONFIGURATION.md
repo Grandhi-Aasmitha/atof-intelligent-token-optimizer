@@ -86,3 +86,7 @@ py -3.11 scripts/start_atof.py --port 8081
 ~~~
 
 Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=report-only-v2. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
+
+## Phase 3 automatic feature detection
+
+Use the same dashboard and startup. Under Advanced · Developer diagnostics choose Check automatic feature detection for unforced synthetic OFF/ON checks. No feature selection or evidence entry is required for this check. See [Phase 3 guide](docs/PHASE3_DYNAMIC_DETECTION.md).

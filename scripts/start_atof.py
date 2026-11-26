@@ -76,6 +76,7 @@ def main(argv=None):
         if args.verify:
             run(python, '-m', 'pytest', '-q')
             run(python, '-m', 'atof.verify_platform')
+            run(python, '-m', 'atof.detection')
             run(python, '-m', 'atof.mcp_smoke', '--agent', 'all')
             run(python, '-m', 'atof.premodel')
         if args.setup_only:

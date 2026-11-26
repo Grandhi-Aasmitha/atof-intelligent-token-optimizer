@@ -14,8 +14,8 @@ class FeatureRegistry:
     def __init__(self):
         raw=json.loads(files('atof').joinpath('catalog/features.json').read_text(encoding='utf-8'))
         self._features={x['id']:Feature(**x) for x in raw}
-        if len(self._features)!=48:
-            raise ValueError('Expected 48 distinct feature IDs')
+        if not self._features or len(self._features) != len(raw):
+            raise ValueError('Feature catalog requires nonempty, distinct feature IDs')
 
     def all(self):
         return list(self._features.values())

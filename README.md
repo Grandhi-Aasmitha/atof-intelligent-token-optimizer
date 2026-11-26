@@ -71,3 +71,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Cross-platform roadmap — Phase 2
 
 [Report-first dashboard and feature-state contract](docs/PHASE2_REPORT_FIRST_UX.md). One dashboard, tests under Advanced, separate provenance for historical and agent-tool records. Native live delivery remains unverified.
+
+## Revised roadmap — Phase 3
+
+[Dynamic feature detection](docs/PHASE3_DYNAMIC_DETECTION.md): registered plugin applicability and relevance, read-only detection API, unforced OFF/ON fixture checks. No new dashboard or manual form. All 48 remain in scope.
