@@ -36,10 +36,11 @@ BLOCKERS = {
     "advanced.cache_aware_clearing":"Provider cache boundary and invalidation proof",
     "advanced.programmatic_tool":"Owned tool execution sandbox, authorization and side-effect controls",
 }
-def readiness():
-    engines=EngineRegistry()
+def readiness(*, registry=None, engines=None):
+    registry=registry if registry is not None else FeatureRegistry()
+    engines=engines if engines is not None else EngineRegistry()
     rows=[]
-    for f in FeatureRegistry().all():
+    for f in registry.all():
         if engines.supports(f.id):
             state,scope="text_engine","Existing structured text evidence pipeline"
         elif f.id in STRUCTURED_FEATURES:

@@ -26,7 +26,7 @@ def feature_states(record=None, *, registry=None, engines=None):
                  (transport == "controlled_adapter" and agent == "custom_api") or
                  can_return_candidate(agent, transport, "return_payload"))
     from .readiness import readiness
-    readiness_by_id = {x['id']:x for x in readiness()['features']}
+    readiness_by_id = {x['id']:x for x in readiness(registry=registry, engines=engines)['features']}
     result = []
     for f in registry.all():
         executable = f.implemented and engines.supports(f.id)
@@ -38,7 +38,7 @@ def feature_states(record=None, *, registry=None, engines=None):
                   'planned' if not executable else 'available' if supported else 'unavailable_for_agent')
         result.append({"id":f.id, "name":f.name, "classification":f.classification,
                        "implemented":f.implemented, "executable":executable,
-                       "supported_for_agent":supported if executable else False,
+                       "supported_for_agent":(supported if executable else structured and transport == "structured_api"),
                        "used":active, "state":status, "readiness":level, "scope":info.get("scope","")})
     return result
 
