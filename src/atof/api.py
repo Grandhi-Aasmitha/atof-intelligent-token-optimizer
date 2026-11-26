@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'eclipse-integration-v7'
+DASHBOARD_REVISION = 'browser-integration-v8'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -187,3 +187,51 @@ def put_control_enabled(settings: ControlSwitch, request: Request):
     except (OSError, ValueError, __import__('sqlite3').Error):
         raise HTTPException(503, "Could not save local control settings") from None
     return snapshot()
+
+
+# Phase 9: browser-owned requests only. No extension-origin exemption.
+from .browser import BrowserRequest
+from fastapi.responses import Response
+
+BROWSER_HEADERS = {
+    **NO_CACHE_HEADERS,
+    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+    "X-Content-Type-Options":"nosniff",
+    "Referrer-Policy":"no-referrer",
+    "X-Frame-Options":"DENY",
+}
+
+@app.get('/browser',response_class=HTMLResponse,include_in_schema=False)
+def browser_page(request: Request):
+    _local_control_access(request)
+    return HTMLResponse(package_files('atof').joinpath('ui/browser.html').read_text(encoding='utf-8'),headers=BROWSER_HEADERS)
+
+@app.get('/browser/client.js',include_in_schema=False)
+def browser_script(request: Request):
+    _local_control_access(request)
+    return Response(package_files('atof').joinpath('ui/browser.js').read_text(encoding='utf-8'),
+                    media_type='application/javascript',headers=BROWSER_HEADERS)
+
+@app.get('/v1/browser/status')
+def browser_status(request: Request):
+    _local_control_access(request)
+    from .browser import status
+    return status()
+
+@app.post('/v1/browser/ask')
+def browser_ask(payload: BrowserRequest, request: Request):
+    _local_control_access(request)
+    # Require actual same-origin browser request, explicit non-simple header
+    # and JSON. No CORS, extension access, arbitrary URL, model or key fields.
+    if (request.headers.get("origin") != str(request.base_url).rstrip("/") or
+        request.headers.get("x-atof-browser") != "1" or
+        request.headers.get("content-type","").split(";")[0].strip().lower() != "application/json" or
+        request.headers.get("sec-fetch-site","same-origin") != "same-origin"):
+        raise HTTPException(403,"Explicit same-origin browser request required")
+    from .browser import ask
+    try:
+        return ask(payload)
+    except PermissionError:
+        raise HTTPException(403,"Browser provider disabled, unconfigured, or consent missing") from None
+    except ValueError:
+        raise HTTPException(400,"Invalid browser request") from None

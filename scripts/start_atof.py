@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DASHBOARD_REVISION = "eclipse-integration-v7"
+DASHBOARD_REVISION = "browser-integration-v8"
 
 
 def require_free_port(port):

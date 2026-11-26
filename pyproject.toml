@@ -23,7 +23,7 @@ atof-benchmark = "atof.benchmark_cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-atof = ["catalog/*.json", "ui/*.html"]
+atof = ["catalog/*.json", "ui/*.html", "ui/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

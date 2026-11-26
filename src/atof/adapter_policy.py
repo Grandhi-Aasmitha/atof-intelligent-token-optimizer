@@ -20,6 +20,8 @@ SPECS = (
     AdapterSpec("jetbrains_gemini", "gemini", "JetBrains plugin-owned Gemini API", "owned_adapter", "owned_preparation", "Explicit single-turn plugin request; not native AI Assistant"),
     AdapterSpec("eclipse_openai", "chatgpt", "Eclipse plugin-owned OpenAI API", "owned_adapter", "owned_preparation", "Explicit single-turn plugin request; not native chat interception"),
     AdapterSpec("eclipse_gemini", "gemini", "Eclipse plugin-owned Gemini API", "owned_adapter", "owned_preparation", "Explicit single-turn plugin request; not native chat interception"),
+    AdapterSpec("browser_openai", "chatgpt", "ATOF browser-owned API client", "owned_adapter", "owned_preparation", "Explicit single-turn OpenAI API request; not ChatGPT Web"),
+    AdapterSpec("browser_gemini", "gemini", "ATOF browser-owned API client", "owned_adapter", "owned_preparation", "Explicit single-turn Gemini API request; not Gemini Web"),
     AdapterSpec("owned_local", "custom_api", "Owned application", "owned_adapter", "owned_preparation", "Prepare one downstream input"),
     *[AdapterSpec("mcp_"+a, a, "Compatible MCP client", "mcp_explicit", "explicit_tool_only",
                  "Explicit tool result; native replacement not verified") for a in MCP_AGENTS],

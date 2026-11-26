@@ -95,3 +95,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 8
 
 [Eclipse integration](docs/PHASE8_ECLIPSE_INTEGRATION.md): native control view, shared policy and optional owned API preparation, Tycho p2 build. Native assistant interception remains unverified.
+
+## Revised roadmap — Phase 9
+
+[Browser integration](docs/PHASE9_BROWSER_INTEGRATION.md): permission-free Chrome/Edge shortcut, optional explicitly authorized browser-owned API client, one dashboard. Native web chat interception is not implemented.

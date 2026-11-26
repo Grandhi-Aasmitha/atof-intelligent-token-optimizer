@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "ATOF Control Center",
+  "version": "0.9.0",
+  "description": "Open the shared local ATOF controls and optional approved browser AI client. No website access.",
+  "action": {
+    "default_title": "ATOF Control Center",
+    "default_popup": "popup.html"
+  }
+}

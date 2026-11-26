@@ -74,7 +74,7 @@ See [Phase 2 dashboard guide](docs/PHASE2_REPORT_FIRST_UX.md) for provenance, fe
 
 ## Old dashboard still displayed?
 
-The report-only dashboard shows revision **eclipse-integration-v7** in its header.
+The report-only dashboard shows revision **browser-integration-v8** in its header.
 Use PowerShell in the intended checkout, not its parent or a nested older clone:
 
 ~~~powershell
@@ -85,7 +85,7 @@ git pull --ff-only origin feature/phase-1-foundation
 py -3.11 scripts/start_atof.py --port 8081
 ~~~
 
-Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=eclipse-integration-v7. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
+Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=browser-integration-v8. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
 
 ## Phase 3 automatic feature detection
 
@@ -110,3 +110,7 @@ Build/install the plugin from ide/intellij using approved Gradle and JDK 21. Ope
 ## Phase 8 Eclipse plugin
 
 Start the same service on 8081. Build in ide/eclipse using approved Maven and JDK 21, install the p2 repository through Eclipse Help > Install New Software. See [Phase 8 guide](docs/PHASE8_ECLIPSE_INTEGRATION.md). For VS Code, the VSIX is generated separately by npm run package in ide/vscode; a missing VSIX means packaging has not completed. The single dashboard remains unchanged in purpose.
+
+## Phase 9 browser extension
+
+Load ide/browser as an unpacked extension only where approved, or open the existing dashboard directly. The optional browser AI client is disabled by default and requires approved API configuration and consent. See [Phase 9 guide](docs/PHASE9_BROWSER_INTEGRATION.md). No native website interception or additional reporting dashboard.

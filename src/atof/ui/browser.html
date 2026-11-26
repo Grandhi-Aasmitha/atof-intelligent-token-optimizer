@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATOF — Browser AI client</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,sans-serif}body{max-width:760px;margin:32px auto;padding:0 18px;line-height:1.55}h1{font-size:1.5rem}textarea,select,button{font:inherit;padding:10px;box-sizing:border-box}textarea,select{width:100%;margin:5px 0 15px}textarea{resize:vertical}button{cursor:pointer}section{border:1px solid #8886;border-radius:12px;padding:18px;margin-top:20px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}label{display:block}.muted{opacity:.8}a{color:inherit}button:disabled{cursor:default;opacity:.65}
+</style></head>
+<body>
+<a href="/dashboard">Back to ATOF Control Center</a>
+<h1>Ask AI with ATOF</h1>
+<p class="muted">Optional single-turn browser client for approved provider APIs. This is not ChatGPT, Claude, Gemini or Copilot native web chat. Your dashboard remains report-only.</p>
+<p id="status" role="status">Checking approved provider configuration…</p>
+<section>
+<form id="ask" autocomplete="off">
+<label for="provider">Approved provider and model</label><select id="provider" required disabled></select>
+<label for="task">Your question</label><textarea id="task" maxlength="20000" rows="3" required disabled></textarea>
+<label for="context">Optional authorized context</label><textarea id="context" maxlength="300000" rows="6" disabled></textarea>
+<label><input type="checkbox" id="consent" required disabled> I authorize this task and context to be processed by local ATOF and sent to the selected approved provider API. API charges may apply.</label>
+<p><button id="send" disabled>Send request</button></p>
+</form>
+</section>
+<section><h2>AI response</h2><pre id="answer" aria-live="polite">No request sent.</pre><p id="report" class="muted"></p><a href="/dashboard">View optimization report</a></section>
+<script src="/browser/client.js"></script>
+</body></html>
