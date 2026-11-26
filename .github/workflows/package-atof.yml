@@ -138,7 +138,8 @@ jobs:
           python-version: '3.11'
           architecture: x64
       - name: Build engine and dependency wheels
-        run: python -m pip wheel --only-binary=:all: --wheel-dir package-staging/wheelhouse .
+        run: |
+          python -m pip wheel --only-binary=:all: --wheel-dir package-staging/wheelhouse .
       - name: Verify offline wheel installation
         shell: pwsh
         run: |
