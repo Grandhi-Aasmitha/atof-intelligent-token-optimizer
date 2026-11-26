@@ -79,3 +79,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 4
 
 [Universal local service and Control Center](docs/PHASE4_UNIVERSAL_LOCAL_SERVICE.md). Persistent shared ON/OFF, IDE/agent preferences and one report-only dashboard. Native integration verification remains pending.
+
+## Revised roadmap — Phase 5
+
+[Universal agent adapters](docs/PHASE5_AGENT_ADAPTERS.md). Shared MCP adapters and explicit owned-input preparation for OpenAI/Gemini/custom applications. No native interception or provider savings claim.

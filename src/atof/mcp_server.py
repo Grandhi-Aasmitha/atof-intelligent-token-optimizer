@@ -14,8 +14,7 @@ from typing import Any
 
 from pydantic import ValidationError
 from .models import OptimizeRequest
-from .service import optimize
-from .reporting import applied_response
+from .adapters import adapter_for_mcp
 from .agent_capabilities import capabilities, AGENTS
 
 PROTOCOL_VERSION = '2025-06-18'
@@ -102,11 +101,9 @@ def _call_tool(name: str, arguments: dict, agent: str) -> dict:
     except (ValidationError, TypeError, ValueError):
         return _tool_result({'error':'invalid_optimization_request'}, is_error=True)
     try:
-        response=optimize(validated, transport='mcp_explicit', source_kind='synthetic_test' if os.getenv('ATOF_MCP_SMOKE_TEST') == '1' else 'agent_tool')
+        response=adapter_for_mcp(agent).tool(validated, synthetic=os.getenv('ATOF_MCP_SMOKE_TEST') == '1')
     except Exception:
         return _tool_result({'error':'internal_optimizer_error'},is_error=True)
-    if name == 'atof_optimize':
-        response = applied_response(response)
     return _tool_result(response.model_dump(mode='json', exclude_none=False))
 
 

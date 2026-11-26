@@ -17,7 +17,7 @@ class OptimizeRequest(BaseModel):
     optimization_enabled: bool = True
     feature_override: str | None = None
     max_optimizers: int = Field(default=4, ge=1, le=5)
-    agent: Literal["custom_api", "codex", "copilot", "claude"] = "custom_api"
+    agent: Literal["custom_api", "codex", "copilot", "claude", "chatgpt", "gemini"] = "custom_api"
     token_budget: int = Field(default=1600, ge=64, le=200_000)
     execute: bool = True
     delivery_mode: Literal["return_payload", "observe_only"] = "return_payload"
@@ -39,7 +39,7 @@ class FeatureDecision(BaseModel):
 class OptimizationReport(BaseModel):
     schema_version: str = "atof-report/1"
     control_policy: Literal['enabled','disabled','request_disabled','settings_unavailable','diagnostic'] = 'enabled'
-    source_kind: Literal["local_api", "agent_tool", "developer_test", "synthetic_test", "controlled_validation"] = "local_api"
+    source_kind: Literal["local_api", "agent_tool", "developer_test", "synthetic_test", "controlled_validation", "owned_adapter"] = "local_api"
     request_id: str
     intent: str
     agent: str
@@ -47,7 +47,7 @@ class OptimizationReport(BaseModel):
     optimized_estimated_tokens: int | None = None
     estimated_reduction_tokens: int | None = None
     provider_tokens_saved: int | None = None
-    delivery_status: Literal["not_attempted", "payload_returned_to_client", "mcp_tool_result_returned", "observed_only", "controlled_receiver_confirmed", "controlled_provider_response_returned", "controlled_delivery_failed"] = "not_attempted"
+    delivery_status: Literal["not_attempted", "payload_returned_to_client", "mcp_tool_result_returned", "observed_only", "controlled_receiver_confirmed", "controlled_provider_response_returned", "controlled_delivery_failed", "owned_payload_prepared", "owned_sender_returned", "owned_sender_failed"] = "not_attempted"
     decisions: list[FeatureDecision] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     engine: str | None = None
@@ -58,7 +58,7 @@ class OptimizationReport(BaseModel):
     estimated_reduction_percent: float | None = None
     measurement_method: str = "local_heuristic_estimate"
     provider_usage: dict | None = None
-    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter"] = "http_api"
+    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter", "owned_adapter"] = "http_api"
     fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
     fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
     execution_duration_ms: float | None = None

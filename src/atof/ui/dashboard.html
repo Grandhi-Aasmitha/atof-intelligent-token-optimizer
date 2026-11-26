@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="atof-dashboard-revision" content="control-center-v3">
+<meta name="atof-dashboard-revision" content="adapter-framework-v4">
 <title>ATOF · Unified dashboard</title>
 <style>
 :root{font-family:system-ui,Segoe UI,sans-serif;color:#182b43;background:#f3f6fa;line-height:1.45}
@@ -12,7 +12,7 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toolbar button[aria-pressed=true]{background:#1d548f;color:white}.toolbar button:disabled{opacity:.6}@media(max-width:540px){.control-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.split{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body>
-<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: control-center-v3</div></header>
+<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>See your AI context reduction and the features used.</div><div style="font-size:12px;margin-top:6px">Dashboard revision: adapter-framework-v4</div></header>
 <main>
 <section id="connection-panel"><h2>ATOF Control Center</h2><p id="connection" class="muted">Checking ATOF…</p><p id="connection-help" class="muted">Waiting for an AI assistant request.</p>
 <div class="toolbar"><strong>Token optimization</strong><button id="control-on" class="secondary" disabled aria-pressed="false">ON</button><button id="control-off" class="secondary" disabled aria-pressed="false">OFF</button></div>
@@ -28,7 +28,7 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 <section><h2>Feature catalog <small id="catalog-count"></small></h2><details id="feature-panel"><summary>View all 48 features</summary><p class="muted">Used = active for this report. Available = inactive but implemented. Unavailable = not supported on this request path. Planned = not implemented.</p><div id="catalog">Loading feature catalog…</div></details></section>
 <section><h2>Request history and comparison</h2>
 
-<div class="toolbar"><label for="scope">Show</label><select id="scope" style="width:auto"><option value="agent_tool">Agent tool requests</option><option value="tests">Developer tests</option><option value="all">All records</option></select><label for="filter">Filter agent</label><select id="filter" style="width:auto"><option value="">All agents</option><option value="custom_api">ATOF API</option><option value="copilot">Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option></select><button class="secondary" id="latest">Follow latest</button><button class="secondary" id="refresh">Refresh</button></div>
+<div class="toolbar"><label for="scope">Show</label><select id="scope" style="width:auto"><option value="agent_tool">Agent / owned API requests</option><option value="tests">Developer tests</option><option value="all">All records</option></select><label for="filter">Filter agent</label><select id="filter" style="width:auto"><option value="">All agents</option><option value="custom_api">ATOF API</option><option value="copilot">Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option><option value="chatgpt">OpenAI API</option><option value="gemini">Gemini API</option></select><button class="secondary" id="latest">Follow latest</button><button class="secondary" id="refresh">Refresh</button></div>
 <p id="storage" class="muted"></p><div class="scroll"><table><thead><tr><th>Time</th><th>Agent / source</th><th>Features used</th><th>Estimated saved</th><th>Reduction</th><th>Result</th><th>View</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
 <section><details id="advanced"><summary>Advanced · Developer diagnostics</summary><p class="muted">Optional automated checks for ATOF developers. No manual input is required.</p><details><summary>Phase 1 · integration readiness and delivery validation</summary><p class="muted">Controlled offline receiver test verifies the submitted payload, not native IDE compatibility or model token usage.</p><button id="delivery-verify">Run pre-model OFF / ON verification</button><p id="delivery-result" role="status"></p><div class="scroll"><table><thead><tr><th>Adapter</th><th>Environment</th><th>Status</th></tr></thead><tbody id="adapter-rows"></tbody></table></div></details>
@@ -41,7 +41,7 @@ const $=id=>document.getElementById(id);
 const num=x=>x==null?'—':Number(x).toLocaleString();
 const pct=x=>x==null?'—':num(x)+'%';
 const el=(tag,txt,cls)=>{const n=document.createElement(tag);if(txt!=null)n.textContent=String(txt);if(cls)n.className=cls;return n};
-const agentName=a=>({custom_api:'ATOF local API',copilot:'GitHub Copilot',codex:'Codex',claude:'Claude'})[a]||a;
+const agentName=a=>({custom_api:'ATOF local API',copilot:'GitHub Copilot',codex:'Codex',claude:'Claude',chatgpt:'OpenAI API',gemini:'Gemini API'})[a]||a;
 let catalog=[], records=[], selectedId=null, refreshing=false;
 async function j(url,options){const r=await fetch(url,{...options,cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json()}
 const post=(url,body)=>j(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -70,7 +70,7 @@ function selectReport(r){
 function row(table,values){const tr=el('tr');for(const val of values){const td=el('td');if(val instanceof Node)td.append(val);else td.textContent=val;tr.append(td)}table.append(tr)}
 function renderHistory(){
  const scope=$('scope').value,agent=$('filter').value;
- const visible=records.filter(r=>(scope==='all'||(scope==='tests'?['developer_test','synthetic_test','controlled_validation'].includes(r.source_kind):r.source_kind==='agent_tool'))&&(!agent||r.agent===agent));
+ const visible=records.filter(r=>(scope==='all'||(scope==='tests'?['developer_test','synthetic_test','controlled_validation'].includes(r.source_kind):['agent_tool','owned_adapter'].includes(r.source_kind)))&&(!agent||r.agent===agent));
  const body=$('rows');body.replaceChildren();
  for(const r of visible){const info=fromHistory(r),feature=el('span');chips(feature,info.ids);const button=el('button','View','secondary');button.onclick=()=>{selectedId=r.request_id;refresh()};
  row(body,[r.timestamp_utc,agentName(r.agent)+' · '+r.source_label,feature,num(info.removed),pct(info.percent),r.delivery_label,button])}
@@ -83,8 +83,8 @@ async function refresh(){
  if(requested!==selectedId)return;
  records=s.history;catalog=s.features;
  $('connection').textContent='ATOF is running';
- $('connection-help').textContent=s.connection.label+(s.connection.latest_agent_tool?' · Latest tool request: '+agentName(s.connection.latest_agent_tool):' · Continue in your AI assistant after an approved integration is configured.');
- $('storage').textContent=s.service.analytics_enabled?'Latest 200 records. Tests are separate from agent tool requests.':'History disabled; enable local analytics to record requests.';
+ $('connection-help').textContent=s.connection.label+(s.connection.latest_agent_tool?' · Latest adapter request: '+agentName(s.connection.latest_agent_tool):' · Continue in your AI assistant after an approved integration is configured.');
+ $('storage').textContent=s.service.analytics_enabled?'Latest 200 records. Tests are separate from agent and owned API requests.':'History disabled; enable local analytics to record requests.';
  selectReport(s.selected?fromHistory(s.selected):null);
  renderHistory();
  }catch(e){$('connection').textContent='ATOF status unavailable';$('connection-help').textContent='Could not refresh the local service.';$('storage').textContent='History unavailable: '+e.message}finally{refreshing=false;if(requested!==selectedId)refresh()}

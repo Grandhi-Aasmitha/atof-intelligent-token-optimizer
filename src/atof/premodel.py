@@ -53,34 +53,19 @@ class ProviderReceiver:
 
 
 def integration_capabilities():
-    """Static contract inventory, never inferred live installation or compatibility."""
+    from .adapter_policy import inventory
+    from .registry import FeatureRegistry
     return {
-        "catalog_scope": 48,
+        "catalog_scope": len(FeatureRegistry().all()),
         "adapters": [
-            {"id": "controlled_local", "agent": "custom_api", "environment": "local test",
-             "status": "available_for_validation", "scope": "owned prompt assembly and delivery to offline receiver",
-             "live_agent_verified": False},
-            {"id": "controlled_provider", "agent": "custom_api", "environment": "approved provider API",
-             "status": "opt_in_validation_required", "scope": "owned request to explicitly configured provider",
-             "live_agent_verified": False},
-            *[{"id": "mcp_" + agent, "agent": agent, "environment": "compatible MCP client",
-               "status": "explicit_tool_only", "scope": "caller-supplied evidence; replacement not proven",
-               "live_agent_verified": False} for agent in ("copilot", "codex", "claude")],
-            *[{"id": ident, "agent": agent, "environment": ide,
-               "status": "unverified", "scope": "requires approved runtime-specific replacement test",
-               "live_agent_verified": False} for ident, agent, ide in (
-                   ("intellij_copilot", "copilot", "IntelliJ IDEA"),
-                   ("intellij_ai", "jetbrains_ai", "IntelliJ IDEA"),
-                   ("vscode_copilot", "copilot", "VS Code"),
-                   ("vscode_codex", "codex", "VS Code"),
-                   ("vscode_claude", "claude", "VS Code"),
-                   ("eclipse_copilot", "copilot", "Eclipse"),
-                   ("chatgpt_web", "chatgpt", "Web"),
-                   ("gemini_web", "gemini", "Web"),
-                   ("other_agent", "other", "Other"))]
-        ],
-        "automatic_interception_verified": False,
-        "provider_savings_verified": False,
+            {"id":"controlled_local", "agent":"custom_api", "environment":"local test",
+             "status":"available_for_validation", "scope":"Offline controlled receiver",
+             "live_agent_verified":False},
+            {"id":"controlled_provider", "agent":"custom_api", "environment":"approved provider API",
+             "status":"opt_in_validation_required", "scope":"Explicit controlled provider trial",
+             "live_agent_verified":False},
+            *inventory()],
+        "automatic_interception_verified":False, "provider_savings_verified":False,
     }
 
 

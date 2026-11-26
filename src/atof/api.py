@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'control-center-v3'
+DASHBOARD_REVISION = 'adapter-framework-v4'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -47,8 +47,8 @@ def reporting_capabilities():
 
 @app.get('/v1/agents/capabilities')
 def agent_capabilities():
-    from .agent_capabilities import capabilities
-    return {agent: capabilities(agent) for agent in ('custom_api', 'codex', 'copilot', 'claude')}
+    from .agent_capabilities import capabilities, AGENTS
+    return {agent: capabilities(agent) for agent in AGENTS}
 
 # Local unauthenticated developer dashboard: bind server to loopback only.
 from fastapi.responses import HTMLResponse
@@ -151,3 +151,23 @@ def put_control(settings: ControlSettings, request: Request):
     except (OSError, ValueError, __import__('sqlite3').Error):
         raise HTTPException(503, "Could not save local control settings") from None
     return snapshot()
+
+@app.get('/v1/adapters')
+def adapter_inventory():
+    from .adapter_policy import inventory
+    return {"adapters":inventory(), "automatic_interception_verified":False}
+
+
+@app.post('/v1/adapters/{adapter_id}/prepare')
+def prepare_adapter(adapter_id: str, payload: OptimizeRequest, request: Request):
+    """Local owned-input preparation only; never forwards requests to providers."""
+    from .adapters import AgentAdapter, UnsupportedAdapter
+    _local_control_access(request)
+    if request.headers.get("x-atof-adapter") != "1":
+        raise HTTPException(403, "Explicit owned adapter header required")
+    try:
+        return AgentAdapter(adapter_id).prepare(payload).public()
+    except UnsupportedAdapter:
+        raise HTTPException(409, "Adapter does not support owned input preparation") from None
+    except ValueError:
+        raise HTTPException(400, "Invalid owned adapter request") from None

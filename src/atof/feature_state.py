@@ -6,6 +6,7 @@ from .analytics import history
 
 SOURCE_LABELS = {
     "agent_tool": "Agent tool (not verified live)",
+    "owned_adapter": "Owned API request (not verified live)",
     "local_api": "Local request",
     "developer_test": "Developer test",
     "synthetic_test": "Synthetic test",
@@ -46,6 +47,9 @@ def present(record):
         "controlled_receiver_confirmed":"Offline receiver confirmed",
         "controlled_provider_response_returned":"Controlled provider responded (test)",
         "controlled_delivery_failed":"Delivery failed",
+        "owned_payload_prepared":"Input prepared; submission unverified",
+        "owned_sender_returned":"Owned sender returned; model usage unverified",
+        "owned_sender_failed":"Submission unconfirmed",
         "mcp_tool_result_returned":"Candidate returned to agent tool",
         "payload_returned_to_client":"Candidate created",
         "observed_only":"Observed only",
@@ -58,7 +62,7 @@ def state(request_id=None):
     data = history(200)
     records = [present(r) for r in data["records"]]
     # Legacy records may be synthetic; never assume live from agent label.
-    agent_records = [r for r in records if r["source_kind"] == "agent_tool"]
+    agent_records = [r for r in records if r["source_kind"] in ("agent_tool","owned_adapter")]
     latest = agent_records[0] if agent_records else None
     selected = next((r for r in records if r["request_id"] == request_id), None) if request_id else latest
     features = feature_states(selected)
