@@ -35,9 +35,12 @@ def test_vscode_extension_explicit_only():
     source=(ROOT/'ide/vscode/extension.js').read_text()
     assert 'atof.optimizeSelection' in source
     assert 'onDidChangeTextDocument' not in source
-    assert 'http://127.0.0.1:8080' in source
+    assert 'http://127.0.0.1:8081' in source
+    assert 'showWarningMessage' in source
 
 def test_intellij_requires_consent():
     source=(ROOT/'ide/intellij/src/main/java/dev/atof/OptimizeSelectionAction.java').read_text()
     assert 'showYesNoDialog' in source
-    assert 'http://127.0.0.1:8080' in source
+    client=(ROOT/'ide/intellij/src/main/java/dev/atof/AtofClient.java').read_text()
+    assert 'http://127.0.0.1:8081' in client
+    assert 'new LocalTransport' in client
