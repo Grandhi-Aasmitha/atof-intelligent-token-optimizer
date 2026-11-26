@@ -58,7 +58,7 @@ class OptimizationReport(BaseModel):
     estimated_reduction_percent: float | None = None
     measurement_method: str = "local_heuristic_estimate"
     provider_usage: dict | None = None
-    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter", "owned_adapter", "structured_api"] = "http_api"
+    execution_transport: Literal["http_api", "mcp_explicit", "controlled_adapter", "owned_adapter", "structured_api", "vscode_chat_tool"] = "http_api"
     fidelity_status: Literal["not_evaluated", "passed", "rejected"] = "not_evaluated"
     fidelity_checks: list[dict[str, str | int | bool]] = Field(default_factory=list)
     execution_duration_ms: float | None = None

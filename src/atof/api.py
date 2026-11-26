@@ -259,3 +259,16 @@ def structured_optimize(payload: StructuredRequest, request: Request):
 def verify_structured_features():
     from .verify_structured import verify
     return verify()
+
+
+@app.post('/v1/integrations/vscode-chat/optimize', response_model=OptimizeResponse)
+def vscode_chat_optimize(payload: OptimizeRequest, request: Request):
+    """Source retrieval tool; no provider call or native interception."""
+    _local_control_access(request)
+    if request.headers.get("x-atof-adapter") != "1":
+        raise HTTPException(403, "Explicit local adapter header required")
+    if (len(payload.files) != 1 or not payload.files[0].content or
+        any((payload.context, payload.diff, payload.test_output, payload.error_output, payload.tool_output)) or
+        payload.feature_override is not None or not payload.execute or payload.delivery_mode != "return_payload"):
+        raise HTTPException(400, "Expected one authorized source file and a task")
+    return optimize(payload.model_copy(update={"agent":"copilot"}), transport="vscode_chat_tool", source_kind="agent_tool")

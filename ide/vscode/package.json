@@ -2,7 +2,7 @@
   "name": "atof-selection-optimizer",
   "displayName": "ATOF Control Center",
   "description": "Shared local optimization controls and approved VS Code model and MCP integrations",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "publisher": "atof-local",
   "private": true,
   "engines": {
@@ -67,10 +67,50 @@
         "id": "atof.localMcp",
         "label": "ATOF (optional Copilot MCP)"
       }
+    ],
+    "languageModelTools": [
+      {
+        "name": "atof_read_context",
+        "displayName": "ATOF: Read optimized source",
+        "toolReferenceName": "atofContext",
+        "canBeReferencedInPrompt": true,
+        "when": "atof.optimizationEnabled && isWorkspaceTrusted",
+        "userDescription": "Read one authorized source file through local ATOF.",
+        "modelDescription": "For a targeted explanation or dependency question about an identified source file, prefer this tool before reading the whole file. Pass the actual task and workspace-relative path, never raw contents. If insufficient or unavailable, use normal authorized source tools. Not for edits, secrets or exact full-file review.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "task",
+            "path"
+          ],
+          "properties": {
+            "task": {
+              "type": "string",
+              "description": "Actual narrow task including target symbol"
+            },
+            "path": {
+              "type": "string",
+              "description": "Source file path relative to the single trusted local workspace"
+            }
+          }
+        }
+      }
+    ],
+    "chatInstructions": [
+      {
+        "path": "./agents/atof.instructions.md",
+        "when": "atof.optimizationEnabled && isWorkspaceTrusted"
+      }
+    ],
+    "chatAgents": [
+      {
+        "path": "./agents/atof.agent.md"
+      }
     ]
   },
   "scripts": {
-    "check": "node --check extension.js && node --check client.js && node --check owned.js",
+    "check": "node --check extension.js && node --check client.js && node --check owned.js && node --check chat-tool.js",
     "test": "node --test test/*.test.js",
     "package": "vsce package --no-dependencies"
   },

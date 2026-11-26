@@ -12,7 +12,7 @@ _registry = FeatureRegistry()
 _engines = EngineRegistry()
 
 def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_metrics: bool = True, source_kind: str | None = None) -> OptimizeResponse:
-    if transport not in ("http_api", "mcp_explicit", "owned_adapter"):
+    if transport not in ("http_api", "mcp_explicit", "owned_adapter", "vscode_chat_tool"):
         raise ValueError("unsupported internal execution transport")
     from .control import effective_request
     provenance = source_kind or ('agent_tool' if transport == 'mcp_explicit' else 'local_api')

@@ -61,6 +61,8 @@ def present(record):
         "observed_only":"Observed only",
         "not_attempted":"No optimized candidate",
     }.get(delivery, "Delivery unverified")
+    if item.get("transport") == "vscode_chat_tool":
+        item["source_label"] = "Copilot Chat source tool (model use unverified)"
     return item
 
 

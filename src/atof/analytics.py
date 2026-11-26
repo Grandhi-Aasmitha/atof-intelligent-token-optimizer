@@ -25,7 +25,7 @@ def connect(path):
 def record(response):
     path=db_path()
     if path is None: return False
-    r=applied_response(response).report
+    r=(response.report if response.report.execution_transport == 'vscode_chat_tool' else applied_response(response).report)
     features=[{"id":d.feature_id,"status":d.status,"reason":d.reason} for d in r.decisions]
     with connect(path) as conn:
         conn.execute("INSERT OR IGNORE INTO request_metrics VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -49,6 +49,8 @@ def history(limit=50):
     for row in rows:
         item=dict(row)
         outcomes=json.loads(item.pop('feature_outcomes_json'))
+        if item['transport'] == 'vscode_chat_tool':
+            item['skip_reasons'] = [f for f in outcomes if f.get('status') != 'executed']
         item['features'] = [f for f in outcomes if f.get('status') == 'executed'] if (item['after_estimate'] is not None and (item['reduction_estimate'] or 0) > 0) else []
         records.append(item)
     return {"enabled":True,"records":records}

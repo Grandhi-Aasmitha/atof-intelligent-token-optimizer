@@ -4,6 +4,7 @@ const path=require('node:path');
 const fs=require('node:fs');
 const {localOrigin,request}=require('./client');
 const {buildRequest,acceptPrepared,sendOne}=require('./owned');
+const {readContext,TOOL_NAME}=require('./chat-tool');
 const config=()=>vscode.workspace.getConfiguration('atof');
 const origin=()=>localOrigin(config().get('apiUrl','http://127.0.0.1:8081'));
 const api=(route,method,payload,headers)=>request(origin(),route,method,payload,headers);
@@ -19,9 +20,11 @@ async function dashboard() {
 async function controlStatus(status) {
   try {
     const c=await api('/v1/control');
+    await vscode.commands.executeCommand('setContext','atof.optimizationEnabled',Boolean(c.available&&c.settings.enabled&&vscode.workspace.isTrusted&&!vscode.env.remoteName));
     status.text=c.available?'$(shield) ATOF '+(c.settings.enabled?'ON':'OFF'):'$(warning) ATOF unavailable';
-    status.tooltip='Local optimization policy only; click for Control Center. AI connection not verified.';
+    status.tooltip='Local policy; Copilot may choose ATOF source tool. Native prompt replacement and provider savings unverified.';
   } catch (_) {
+    await vscode.commands.executeCommand('setContext','atof.optimizationEnabled',false);
     status.text='$(debug-disconnect) ATOF offline';
     status.tooltip='Start the local ATOF service; click to open Control Center.';
   }
@@ -96,6 +99,15 @@ function activate(ctx) {
   const status=vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,90);
   status.command='atof.openDashboard';status.text='$(shield) ATOF';status.show();
   ctx.subscriptions.push(status);
+  if(vscode.lm?.registerTool && vscode.LanguageModelToolResult && vscode.LanguageModelTextPart){
+    ctx.subscriptions.push(vscode.lm.registerTool(TOOL_NAME,{
+      prepareInvocation(options){return {invocationMessage:'ATOF: read and optimize source',confirmationMessages:{title:'Allow ATOF source retrieval?',message:'Read authorized source in this trusted workspace, send it to local ATOF and return evidence to Copilot: '+String(options.input?.path||'')}};},
+      async invoke(options,token){
+        const result=await readContext({input:options.input,token,api,budget:budget(),trusted:()=>vscode.workspace.isTrusted&&!vscode.env.remoteName,roots:()=> (vscode.workspace.workspaceFolders||[]).filter(f=>f.uri.scheme==='file').map(f=>f.uri.fsPath)});
+        return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(result)]);
+      }
+    }));
+  }
   let refreshing=false;
   const refresh=async()=>{if(refreshing)return;refreshing=true;try{await controlStatus(status)}finally{refreshing=false}};
   const timer=setInterval(refresh,10000);ctx.subscriptions.push({dispose:()=>clearInterval(timer)});refresh();

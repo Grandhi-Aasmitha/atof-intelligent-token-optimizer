@@ -14,6 +14,7 @@ class AdapterSpec:
     scope: str
 
 SPECS = (
+    AdapterSpec("vscode_chat_tool", "copilot", "VS Code Copilot Chat tool", "vscode_chat_tool", "candidate_only", "Agent-selected source retrieval; not native prompt replacement"),
     AdapterSpec("local_api", "custom_api", "Owned application", "http_api", "candidate_only", "Existing explicit candidate API"),
     AdapterSpec("vscode_copilot_model", "copilot", "VS Code Language Model API", "owned_adapter", "owned_preparation", "Extension-owned single-turn input; not native chat interception"),
     AdapterSpec("jetbrains_openai", "chatgpt", "JetBrains plugin-owned OpenAI API", "owned_adapter", "owned_preparation", "Explicit single-turn plugin request; not native AI Assistant"),

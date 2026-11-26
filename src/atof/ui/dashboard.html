@@ -56,14 +56,14 @@ function renderCatalog(){
  const card=el('div',null,'feature '+(f.used?'active':f.readiness==='runtime_required'?'planned':'inactive'));
  card.append(el('strong',f.name),el('small',labels[f.state]));if(f.scope)card.append(el('small',f.scope));card.title=f.id;sections.get(group).append(card)}
 }
-function fromHistory(r){return {id:r.request_id,agent:r.agent,before:r.before_estimate,after:r.after_estimate,removed:r.reduction_estimate,percent:r.reduction_pct,ids:r.features.filter(f=>f.status==='executed').map(f=>f.id),delivery:r.delivery_status,transport:r.transport,fidelity:r.fidelity_status,duration:r.duration_ms,candidate:null,source:r.source_label,deliveryLabel:r.delivery_label}}
+function fromHistory(r){return {id:r.request_id,agent:r.agent,before:r.before_estimate,after:r.after_estimate,removed:r.reduction_estimate,percent:r.reduction_pct,ids:r.features.filter(f=>f.status==='executed').map(f=>f.id),delivery:r.delivery_status,transport:r.transport,fidelity:r.fidelity_status,duration:r.duration_ms,candidate:null,source:r.source_label,deliveryLabel:r.delivery_label,skips:r.skip_reasons||[]}}
 function selectReport(r){
  $('selected').textContent=r?agentName(r.agent):'Waiting for an AI assistant request';
  $('source-label').textContent=r?r.source:'';$('delivery-label').textContent=r?r.deliveryLabel:'';
  $('before').textContent=num(r?.before);$('after').textContent=num(r?.after);$('removed').textContent=num(r?.removed);$('percent').textContent=pct(r?.percent);
  $('beforebar').style.width=r?.before>0?'100%':'0%';
  $('afterbar').style.width=r?.after!=null&&r.before>0?Math.min(100,100*r.after/r.before)+'%':'0%';
- $('details').textContent=r?'Request: '+r.id+' | Transport: '+r.transport+' | Delivery: '+r.delivery+' | Fidelity: '+r.fidelity+' | Processing: '+num(r.duration)+' ms | Model use unverified'+(r.after==null?' | No optimized candidate; retain original.':''):'';
+ $('details').textContent=r?'Request: '+r.id+' | Transport: '+r.transport+' | Delivery: '+r.delivery+' | Fidelity: '+r.fidelity+' | Processing: '+num(r.duration)+' ms | Model use unverified'+(r.after==null?' | No optimized candidate; retain original.':'')+(r.skips?.length?' | Skip reasons: '+r.skips.map(s=>s.id+': '+s.reason).join('; '):''):'';
  chips($('applied'),r?.ids||[]);
  renderCatalog();
 }
