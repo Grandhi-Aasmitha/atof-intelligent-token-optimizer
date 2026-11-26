@@ -109,7 +109,7 @@ function displayBenchmark(r){
 $('benchmark-view').onclick=async()=>{try{const f=$('benchmark-file').files[0];if(f&&f.size>10000000)throw Error('Report exceeds 10 MB');const raw=f?await f.text():$('benchmark-json').value;displayBenchmark(JSON.parse(raw))}catch(e){$('benchmark-data').replaceChildren();$('benchmark-result').textContent='Import failed: '+e.message}};
 async function loadAdapters(){try{const data=await j('/v1/integrations/capabilities');$('adapter-rows').replaceChildren();for(const a of data.adapters)row($('adapter-rows'),[a.id,a.environment,a.status+' · '+a.scope])}catch(e){$('delivery-result').textContent='Integration inventory unavailable: '+e.message}}
 $('delivery-verify').onclick=async()=>{const b=$('delivery-verify');b.disabled=true;$('delivery-result').textContent='Running controlled validation…';try{const v=await post('/v1/integrations/verify',{});$('delivery-result').textContent=(v.passed?'PASS':'FAIL')+' · complete prompt estimates '+num(v.full_prompt_before)+' → '+num(v.full_prompt_after)+' · saved '+num(v.full_prompt_estimated_reduction)+' ('+pct(v.full_prompt_estimated_reduction_percent)+') · offline receiver, no model calls';await refresh()}catch(e){$('delivery-result').textContent='Validation failed: '+e.message}finally{b.disabled=false}};
-let control=null, controlBusy=false, controlReading=false;
+let control=null, controlBusy=false, controlReading=false, controlGeneration=0;
 function paintControl(data){
  control=data.settings;
  $('control-on').setAttribute('aria-pressed',String(control.enabled));
@@ -120,14 +120,14 @@ function paintControl(data){
  $('control-status').textContent=data.available?(control.enabled?'Optimization ON · applies to supported ATOF requests':'Optimization OFF · original context retained'):(data.error||'Settings unavailable');
 }
 async function readControl(){
- if(controlBusy||controlReading)return;controlReading=true;
- try{const data=await j('/v1/control');if(!controlBusy)paintControl(data)}
- catch(e){if(!controlBusy){for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;$('control-status').textContent='Control Center unavailable: '+e.message}}
+ if(controlBusy||controlReading)return;controlReading=true;const generation=controlGeneration;
+ try{const data=await j('/v1/control');if(!controlBusy&&generation===controlGeneration)paintControl(data)}
+ catch(e){if(!controlBusy&&generation===controlGeneration){for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;$('control-status').textContent='Control Center unavailable: '+e.message}}
  finally{controlReading=false}
 }
 async function changeControl(patch){
  if(controlBusy||!control)return;
- controlBusy=true;for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;
+ controlBusy=true;controlGeneration++;for(const id of ['control-on','control-off','preferred-ide','preferred-agent'])$(id).disabled=true;
  try{const data=await j('/v1/control',{method:'PUT',headers:{'Content-Type':'application/json','X-ATOF-Control':'1'},body:JSON.stringify({...control,...patch})});controlBusy=false;paintControl(data)}
  catch(e){controlBusy=false;await readControl();$('control-status').textContent='Change not confirmed: '+e.message}
 }
