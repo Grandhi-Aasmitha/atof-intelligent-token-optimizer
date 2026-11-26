@@ -66,3 +66,7 @@ Never commit credentials. Test with synthetic/non-sensitive data. Model provider
 The planner now discovers plugin metadata from the engine registry. Generic context and tool output support reversible repeated-line encoding. The existing task prompt is not rewritten. Seven modules are executable; the other feature IDs remain a roadmap, not active optimizers. New plugins require a fidelity validator and authorized evidence.
 
 Run `python -m atof.verify_platform` or use **Run feature verification** in the dashboard. Each synthetic fixture runs OFF and ON, with no model calls. Enable analytics before launch to see both arms in history. See [Generic platform onboarding and verification](docs/GENERIC_PLATFORM.md).
+
+## New user setup
+
+Start with the [ATOF Configuration and User Guide](README_ATOF_CONFIGURATION.md) for installation, agent setup, daily usage and end-to-end validation.
