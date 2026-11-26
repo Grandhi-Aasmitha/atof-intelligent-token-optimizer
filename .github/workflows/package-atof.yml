@@ -1,0 +1,160 @@
+name: ATOF installable packages
+on:
+  push:
+    branches: [feature/phase-1-foundation]
+    paths:
+      - 'ide/**'
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'README.md'
+      - 'packaging/**'
+      - 'scripts/package_artifacts.py'
+      - '.github/workflows/package-atof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  intellij:
+    name: IntelliJ ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+          cache-disabled: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test and build plugin
+        working-directory: ide/intellij
+        run: gradle --no-daemon test buildPlugin
+      - name: Validate plugin ZIP and stage artifact
+        run: python scripts/package_artifacts.py intellij
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATOF-IntelliJ
+          path: package-out/intellij/
+          if-no-files-found: error
+          retention-days: 30
+
+  vscode:
+    name: VS Code VSIX
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate extension
+        working-directory: ide/vscode
+        run: |
+          npm run check
+          npm test
+      - name: Build VSIX with pinned VSCE
+        working-directory: ide/vscode
+        run: npm exec --yes --package=@vscode/vsce@3.9.2 -- vsce package --no-dependencies --out ATOF-VSCode.vsix
+      - name: Validate VSIX and stage artifact
+        run: python scripts/package_artifacts.py vscode
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATOF-VSCode
+          path: package-out/vscode/
+          if-no-files-found: error
+          retention-days: 30
+
+  eclipse:
+    name: Eclipse p2 ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build Eclipse repository
+        working-directory: ide/eclipse
+        run: |
+          mvn --version
+          mvn --batch-mode --no-transfer-progress clean verify
+      - name: Validate and archive p2 repository
+        run: python scripts/package_artifacts.py eclipse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATOF-Eclipse
+          path: package-out/eclipse/
+          if-no-files-found: error
+          retention-days: 30
+
+  browser:
+    name: Chrome and Edge ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Package permission-free extension
+        run: python scripts/package_artifacts.py browser
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATOF-Browser
+          path: package-out/browser/
+          if-no-files-found: error
+          retention-days: 30
+
+  core-windows:
+    name: Windows Python engine bundle
+    runs-on: windows-2025
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Build engine and dependency wheels
+        run: python -m pip wheel --only-binary=:all: --wheel-dir package-staging/wheelhouse .
+      - name: Verify offline wheel installation
+        shell: pwsh
+        run: |
+          python -m venv "$env:RUNNER_TEMP\atof-wheel-test"
+          $python = "$env:RUNNER_TEMP\atof-wheel-test\Scripts\python.exe"
+          & $python -m pip install --no-index --find-links package-staging/wheelhouse atof-intelligent-token-optimizer
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -I -c "from atof.api import health; from importlib.resources import files; from atof.registry import FeatureRegistry; assert health()['status']=='ok'; assert len(FeatureRegistry().all())==48; assert files('atof').joinpath('ui/dashboard.html').is_file(); assert files('atof').joinpath('ui/browser.js').is_file(); print(health())"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package offline Python bundle
+        run: python scripts/package_artifacts.py core
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATOF-Core-Windows
+          path: package-out/core/
+          if-no-files-found: error
+          retention-days: 30

@@ -12,3 +12,7 @@ Install the ZIP from build/distributions in Settings > Plugins > gear > Install 
 ATOF: Ask AI with ATOF is optional, requires an approved provider API credential in the IDE environment (OPENAI_API_KEY or GEMINI_API_KEY), approved model and per-request consent. It does not use or read subscriptions, native AI chat, credential stores, or other editor files. Select authorized text optionally. ATOF optimizes before the plugin-owned provider call. A preparation failure aborts; no raw fallback or retry. No API keys stored by ATOF. Provider usage and actual token savings are not verified. Native Copilot/Codex/Claude/AI Assistant integration remains pending; use explicitly approved MCP client setup where supported. No CLI or organization policy bypass.
 
 See docs/PHASE7_JETBRAINS_INTEGRATION.md.
+
+## Prebuilt packages (recommended for installation)
+
+Use [the prebuilt package guide](../../docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.

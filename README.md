@@ -103,3 +103,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 10 (partial)
 
 [Structured optimizers and all-48 readiness](docs/PHASE10_FEATURE_IMPLEMENTATION.md). Seven text engines, twelve structured candidate features, seven bounded controls, 22 runtime-required capabilities. Phase 10 acceptance remains open.
+
+## Prebuilt packages (recommended for installation)
+
+Use [the prebuilt package guide](docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.

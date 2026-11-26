@@ -118,3 +118,7 @@ Load ide/browser as an unpacked extension only where approved, or open the exist
 ## Phase 10 feature readiness
 
 The same dashboard separates text engines, structured candidate implementations, controls and runtime-required features. Under Advanced, Verify structured optimizers runs offline checks. See [Phase 10 contract](docs/PHASE10_FEATURE_IMPLEMENTATION.md); normal native clients do not automatically supply the new structured evidence. No verified provider savings claim.
+
+## Prebuilt packages (recommended for installation)
+
+Use [the prebuilt package guide](docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.

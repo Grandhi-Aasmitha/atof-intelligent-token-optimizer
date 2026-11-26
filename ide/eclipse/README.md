@@ -18,3 +18,7 @@ Open Window > Show View > Other > ATOF > ATOF Control Center. ON/OFF changes the
 Optional Ask AI buttons use approved OPENAI_API_KEY or GEMINI_API_KEY in Eclipse's environment, a model ID and explicit consent. Only the task and current editor selection are prepared locally. No automatic file reads or chat interception. No key stored or transmitted to ATOF. A preparation failure aborts before provider submission; no automatic retry. Cancelling after submission may not stop provider charges. Ordinary Copilot/Eclipse chat remains unchanged; approved explicit MCP tools are available via the existing stdio server where the installed client permits. Do not duplicate a configured server or bypass policy.
 
 See docs/PHASE8_ECLIPSE_INTEGRATION.md.
+
+## Prebuilt packages (recommended for installation)
+
+Use [the prebuilt package guide](../../docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.
