@@ -12,7 +12,7 @@ def test_catalog_and_single_dashboard():
     assert catalog['count']==len(catalog['features'])==48
     assert set(x['id'] for x in catalog['features'] if x['implemented'])=={x['feature_id'] for x in engines['engines']}
     html=c.get('/dashboard').text
-    for label in ('All features','Features applied','Compare OFF / ON','Request history','Benchmark imports','Not implemented','/v1/features','/v1/engines'):
+    for label in ('View all 48 features','Features utilized','Compare OFF / ON','Request history','Benchmark imports','Not implemented','/v1/dashboard/state'):
         assert label in html
 
 

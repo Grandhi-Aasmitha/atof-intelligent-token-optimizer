@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import os
 from typing import Any
 
 from pydantic import ValidationError
@@ -101,7 +102,7 @@ def _call_tool(name: str, arguments: dict, agent: str) -> dict:
     except (ValidationError, TypeError, ValueError):
         return _tool_result({'error':'invalid_optimization_request'}, is_error=True)
     try:
-        response=optimize(validated, transport='mcp_explicit')
+        response=optimize(validated, transport='mcp_explicit', source_kind='synthetic_test' if os.getenv('ATOF_MCP_SMOKE_TEST') == '1' else 'agent_tool')
     except Exception:
         return _tool_result({'error':'internal_optimizer_error'},is_error=True)
     if name == 'atof_optimize':

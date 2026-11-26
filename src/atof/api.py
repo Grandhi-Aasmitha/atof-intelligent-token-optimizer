@@ -79,8 +79,8 @@ def compare_request(payload: OptimizeRequest):
     """Matched local evidence comparison; no model calls."""
     if payload.agent != 'custom_api':
         raise HTTPException(status_code=400, detail='Live agent comparisons require the actual agent integration')
-    off = applied_response(optimize(payload.model_copy(update={'optimization_enabled':False, 'execute':True})))
-    on = applied_response(optimize(payload.model_copy(update={'optimization_enabled':True, 'execute':True})))
+    off = applied_response(optimize(payload.model_copy(update={'optimization_enabled':False, 'execute':True}), source_kind='developer_test'))
+    on = applied_response(optimize(payload.model_copy(update={'optimization_enabled':True, 'execute':True}), source_kind='developer_test'))
     return {'off':off, 'on':on, 'measurement':'local_heuristic_estimate', 'provider_savings_verified':False}
 
 @app.get('/v1/integrations/capabilities')
@@ -93,3 +93,12 @@ def verify_controlled_delivery():
     """Fixed synthetic evidence only; never invokes an external provider."""
     from .premodel import verify
     return verify()
+
+@app.post('/v1/diagnostics/optimize', response_model=OptimizeResponse)
+def diagnostic_optimize(payload: OptimizeRequest):
+    return applied_response(optimize(payload, source_kind='developer_test'))
+
+@app.get('/v1/dashboard/state')
+def dashboard_state(request_id: str | None = None):
+    from .feature_state import state
+    return state(request_id)

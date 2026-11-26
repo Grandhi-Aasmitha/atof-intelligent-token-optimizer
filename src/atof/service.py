@@ -11,7 +11,7 @@ from .orchestrator import run_pipeline, source_sections, compose
 _registry = FeatureRegistry()
 _engines = EngineRegistry()
 
-def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_metrics: bool = True) -> OptimizeResponse:
+def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_metrics: bool = True, source_kind: str | None = None) -> OptimizeResponse:
     if transport not in ("http_api", "mcp_explicit"):
         raise ValueError("unsupported internal execution transport")
     analysis = analyze(request)
@@ -21,7 +21,8 @@ def optimize(request: OptimizeRequest, *, transport: str = "http_api", record_me
     report = OptimizationReport(request_id=str(uuid.uuid4()), intent=analysis.intent,
                                 agent=request.agent,
                                 original_estimated_tokens=estimate_text(original or request.task),
-                                decisions=decisions, execution_transport=transport)
+                                decisions=decisions, execution_transport=transport,
+                                source_kind=source_kind or ("agent_tool" if transport == "mcp_explicit" else "local_api"))
     report.context_breakdown = {key: estimate_text(value) for key, value in sections.items()}
     report.token_budget = request.token_budget
     response = run_pipeline(request, decisions, report, _engines)

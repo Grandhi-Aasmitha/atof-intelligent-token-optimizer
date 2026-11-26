@@ -102,7 +102,7 @@ def deliver(request: OptimizeRequest, receiver: Receiver, *, authorized: bool = 
         raise ValueError("Controlled adapter requires an executing custom_api request")
     original = compose(source_sections(request))
     original_prompt = assemble(request.task, original)
-    response = applied_response(optimize(request, record_metrics=False))
+    response = applied_response(optimize(request, record_metrics=False, source_kind='controlled_validation'))
     candidate = response.optimized_context
     # Be conservative for partially rejected candidates and account for framing.
     prompt = assemble(request.task, candidate) if candidate else original_prompt

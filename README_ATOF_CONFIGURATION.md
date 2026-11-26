@@ -30,12 +30,9 @@ Optional flags: --verify runs regression tests, local feature verification and l
 
 ## 3. Use one dashboard
 
-- Load a synthetic example and click Run request. The catalog shows all 48 current requirements, highlighting only accepted applied features for the selected request. Implemented but unused features are inactive; unimplemented entries are clearly marked. Seven strategies are currently executable.
-- Click Compare OFF / ON to run a matched local evidence comparison. No provider calls.
-- View original/optimized estimates, estimated saved tokens, reduction percentage, agent, delivery, fidelity, processing time and applied-only feature report.
-- Request history refreshes every five seconds; View selects a record, Follow latest resumes automatic selection. History contains metadata only, not raw evidence, and is limited to 200 records.
-- Expand developer diagnostics to run all existing fixtures. This is separate from normal request reports.
-- Expand benchmark imports to paste the synthetic benchmark JSON or choose the external upstream JSON report. No second dashboard is required. External metrics are separate and never activate ATOF features or inflate its totals.
+Open the dashboard to view the latest agent-tool request, token estimates and features used. If no approved integration is verified, the page says so. No need to type prompts or select evidence on the dashboard. The catalog expands to all 48 features. History separates developer tests from agent-tool requests; choose a record and View to inspect it. Follow latest restores the default report.
+
+For developer testing only, expand Advanced · Developer diagnostics. Run a local example, compare OFF / ON, verify features or import a benchmark there. These are not proof of live agent optimization.
 
 ## 4. Live Copilot test
 
@@ -72,3 +69,5 @@ Token counts are local estimates, not actual provider savings. Actual savings ne
 ## Phase 1 delivery validation
 
 Expand Phase 1 · integration readiness and delivery validation in the same dashboard and run the controlled OFF / ON test. Whole-prompt estimates include framing; native agent/model consumption is not verified. See [Phase 1 guide](docs/PHASE1_INTEGRATION_FOUNDATION.md) for optional approved provider testing and acceptance gates.
+
+See [Phase 2 dashboard guide](docs/PHASE2_REPORT_FIRST_UX.md) for provenance, feature state and test instructions.

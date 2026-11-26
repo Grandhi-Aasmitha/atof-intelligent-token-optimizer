@@ -1,0 +1,11 @@
+# Phase 2 — Report-first dashboard and shared feature-state contract
+
+Start with py -3.11 scripts/start_atof.py and open http://127.0.0.1:8080/dashboard. No manual request form is required for normal reporting. The service running is not proof that an AI client is connected. Agent-tool records are explicitly unverified candidates. No native live delivery claim is made.
+
+The report is first, all 48 features are available under an expandable catalog, and history defaults to agent tool requests. Choose Developer tests or All records to inspect local test results. Manual input, OFF/ON tests, feature checks, integration readiness and benchmark imports are under Advanced. Test results do not replace the latest agent-tool report. No separate dashboard.
+
+The shared dashboard state endpoint resolves the catalog using registry and adapter policy, not hardcoded feature names. All 48 are in scope; seven currently execute. Available means the existing evidence-return path supports the registered engine, not that automatic interception is verified. Future non-text optimizers need expanded execution contracts; this phase does not implement the remaining 41. No change to existing optimization priority or resource limits.
+
+Metadata provenance is stored in a separate SQLite table, preserving existing request metrics without destructive migrations. Old rows have unknown provenance. Agent labels never establish live delivery. Synthetic verification and MCP smoke tests are marked test records. Controlled provider trials are also validation records, not native agent records. Raw task/evidence is not persisted. Existing API and MCP interfaces remain compatible.
+
+Testing: run python -m pytest -q, python -m atof.verify_platform, python -m atof.premodel and python -m atof.mcp_smoke --agent all in the installed environment. New tests cover 48 states, unsupported paths, test isolation, spoofed agent labels, legacy provenance, and report-first markup. For browser validation expand Advanced, run OFF/ON, select Developer tests in history, view a record, and confirm the latest agent-tool report is restored with Follow latest. Verify no raw evidence is in history. Live native agent acceptance remains open until actual replacement and model usage are verified in the approved IDE.

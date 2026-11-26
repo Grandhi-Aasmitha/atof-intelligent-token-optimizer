@@ -19,6 +19,7 @@ def connect(path):
       fidelity_status TEXT NOT NULL, before_estimate INTEGER NOT NULL,
       after_estimate INTEGER, reduction_estimate INTEGER, reduction_pct REAL,
       duration_ms REAL, provider_tokens_saved INTEGER, feature_outcomes_json TEXT NOT NULL)""")
+    conn.execute('CREATE TABLE IF NOT EXISTS request_provenance (request_id TEXT PRIMARY KEY, source_kind TEXT NOT NULL)')
     return conn
 
 def record(response):
@@ -33,6 +34,7 @@ def record(response):
            r.original_estimated_tokens,r.optimized_estimated_tokens,
            r.estimated_reduction_tokens,r.estimated_reduction_percent,
            r.execution_duration_ms,None,json.dumps(features,separators=(",",":"))))
+        conn.execute("INSERT OR IGNORE INTO request_provenance VALUES (?,?)", (r.request_id, r.source_kind))
     return True
 
 def history(limit=50):
@@ -42,7 +44,7 @@ def history(limit=50):
     if not path.is_file():return {"enabled":True,"records":[]}
     with connect(path) as conn:
         conn.row_factory=sqlite3.Row
-        rows=conn.execute("SELECT * FROM request_metrics ORDER BY timestamp_utc DESC,request_id DESC LIMIT ?",(min(200,max(1,limit)),)).fetchall()
+        rows=conn.execute("SELECT m.*, COALESCE(p.source_kind, 'legacy_unknown') AS source_kind FROM request_metrics m LEFT JOIN request_provenance p ON m.request_id=p.request_id ORDER BY m.timestamp_utc DESC,m.request_id DESC LIMIT ?",(min(200,max(1,limit)),)).fetchall()
     records=[]
     for row in rows:
         item=dict(row)

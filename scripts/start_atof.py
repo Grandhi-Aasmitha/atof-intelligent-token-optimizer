@@ -42,7 +42,7 @@ def main(argv=None):
         if args.setup_only:
             print('ATOF setup complete.', flush=True)
             return 0
-        print(f'Open http://127.0.0.1:{args.port}/dashboard (Ctrl+C to stop). Local metadata analytics enabled.', flush=True)
+        print(f'ATOF is starting. Open http://127.0.0.1:{args.port}/dashboard (Ctrl+C to stop). Local metadata analytics enabled. No live AI adapter verified by startup.', flush=True)
         run(python, '-m', 'uvicorn', 'atof.api:app', '--host', '127.0.0.1', '--port', args.port, env=env)
         return 0
     except KeyboardInterrupt:

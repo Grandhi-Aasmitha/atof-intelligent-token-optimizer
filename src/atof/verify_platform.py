@@ -22,8 +22,8 @@ def verify():
     results = []
     for feature, data, anchors in fixtures():
         request = OptimizeRequest(**data, feature_override=feature)
-        off = optimize(request.model_copy(update={'optimization_enabled':False}))
-        on = optimize(request)
+        off = optimize(request.model_copy(update={'optimization_enabled':False}), source_kind='synthetic_test')
+        on = optimize(request, source_kind='synthetic_test')
         report = on.report
         content = on.optimized_context or ''
         passed = (off.optimized_context is None and not off.report.executed_features and

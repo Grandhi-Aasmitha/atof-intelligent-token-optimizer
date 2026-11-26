@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+import os
 
 
 def check(agent: str) -> dict:
@@ -18,7 +19,7 @@ def check(agent: str) -> dict:
     ]
     process=subprocess.run([sys.executable,'-m','atof.mcp_server','--agent',agent],
         input='\n'.join(json.dumps(item) for item in requests)+'\n',text=True,
-        capture_output=True,timeout=20)
+        capture_output=True,timeout=20,env={**os.environ,'ATOF_MCP_SMOKE_TEST':'1'})
     if process.returncode:
         raise RuntimeError('MCP server process failed')
     events=[json.loads(line) for line in process.stdout.splitlines()]

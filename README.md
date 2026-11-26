@@ -67,3 +67,7 @@ Start with the [ATOF Configuration and User Guide](README_ATOF_CONFIGURATION.md)
 ## Cross-platform roadmap — Phase 1
 
 See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDATION.md). Start with `py -3.11 scripts/start_atof.py --verify`. The unified dashboard includes an offline controlled pre-model delivery verification. Live IDE integration remains subject to runtime validation.
+
+## Cross-platform roadmap — Phase 2
+
+[Report-first dashboard and feature-state contract](docs/PHASE2_REPORT_FIRST_UX.md). One dashboard, tests under Advanced, separate provenance for historical and agent-tool records. Native live delivery remains unverified.

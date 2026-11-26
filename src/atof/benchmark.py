@@ -104,7 +104,7 @@ def benchmark(request: OptimizeRequest,provider:Provider,*,required_terms=(),ord
     if request.agent!='custom_api': raise ValueError('Only controlled API requests are benchmarkable')
     baseline=compose(source_sections(request))
     if not baseline: raise ValueError('Missing evidence')
-    response=optimize(request)
+    response=optimize(request, source_kind='synthetic_test' if provider.name == 'synthetic' else 'developer_test')
     if not response.optimized_context:
         return {'status':'no_reducing_candidate','provider_calls':0,'report':applied_response(response).report.model_dump(mode='json')}
     prompts={'A':_prompt(request.task,baseline),'B':_prompt(request.task,response.optimized_context)}
