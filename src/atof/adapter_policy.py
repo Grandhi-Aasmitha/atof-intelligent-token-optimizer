@@ -15,6 +15,7 @@ class AdapterSpec:
 
 SPECS = (
     AdapterSpec("local_api", "custom_api", "Owned application", "http_api", "candidate_only", "Existing explicit candidate API"),
+    AdapterSpec("vscode_copilot_model", "copilot", "VS Code Language Model API", "owned_adapter", "owned_preparation", "Extension-owned single-turn input; not native chat interception"),
     AdapterSpec("owned_local", "custom_api", "Owned application", "owned_adapter", "owned_preparation", "Prepare one downstream input"),
     *[AdapterSpec("mcp_"+a, a, "Compatible MCP client", "mcp_explicit", "explicit_tool_only",
                  "Explicit tool result; native replacement not verified") for a in MCP_AGENTS],

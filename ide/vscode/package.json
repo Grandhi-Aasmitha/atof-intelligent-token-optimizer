@@ -1,23 +1,39 @@
 {
   "name": "atof-selection-optimizer",
-  "displayName": "ATOF Selection Optimizer",
-  "description": "Explicit local optimization of selected code and diagnostic text",
-  "version": "0.7.0",
+  "displayName": "ATOF Control Center",
+  "description": "Shared local optimization controls and approved VS Code model and MCP integrations",
+  "version": "0.8.0",
   "publisher": "atof-local",
   "private": true,
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.105.0"
   },
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "atof.optimizeSelection",
-        "title": "ATOF: Optimize Selection"
+        "command": "atof.openDashboard",
+        "title": "ATOF: Open Control Center"
       },
       {
-        "command": "atof.openDashboard",
-        "title": "ATOF: Open Dashboard"
+        "command": "atof.toggleOptimization",
+        "title": "ATOF: Toggle Optimization"
+      },
+      {
+        "command": "atof.askAI",
+        "title": "ATOF: Ask AI with ATOF"
+      },
+      {
+        "command": "atof.optimizeSelection",
+        "title": "ATOF: Optimize Selection (Local Candidate Only)"
+      },
+      {
+        "command": "atof.configureCopilot",
+        "title": "ATOF: Configure Optional Copilot MCP"
+      },
+      {
+        "command": "atof.disableCopilot",
+        "title": "ATOF: Remove Extension-Provided Copilot MCP"
       }
     ],
     "configuration": {
@@ -25,27 +41,55 @@
       "properties": {
         "atof.apiUrl": {
           "type": "string",
-          "default": "http://127.0.0.1:8080"
+          "default": "http://127.0.0.1:8081",
+          "scope": "machine",
+          "description": "Local ATOF service origin; HTTP loopback only."
         },
         "atof.tokenBudget": {
           "type": "integer",
           "default": 1600,
-          "minimum": 64
+          "minimum": 64,
+          "scope": "machine"
         }
       }
     },
     "menus": {
       "editor/context": [
         {
-          "command": "atof.optimizeSelection",
+          "command": "atof.askAI",
           "when": "editorHasSelection",
           "group": "navigation@50"
         }
       ]
-    }
+    },
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "atof.localMcp",
+        "label": "ATOF (optional Copilot MCP)"
+      }
+    ]
   },
   "scripts": {
-    "check": "node --check extension.js"
+    "check": "node --check extension.js && node --check client.js && node --check owned.js",
+    "test": "node --test test/*.test.js",
+    "package": "vsce package --no-dependencies"
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": {
+      "supported": false
+    }
+  },
+  "categories": [
+    "Other"
+  ]
 }

@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'adapter-framework-v4'
+DASHBOARD_REVISION = 'vscode-integration-v5'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -171,3 +171,19 @@ def prepare_adapter(adapter_id: str, payload: OptimizeRequest, request: Request)
         raise HTTPException(409, "Adapter does not support owned input preparation") from None
     except ValueError:
         raise HTTPException(400, "Invalid owned adapter request") from None
+
+from pydantic import BaseModel, ConfigDict, StrictBool
+
+class ControlSwitch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: StrictBool
+
+@app.put('/v1/control/enabled')
+def put_control_enabled(settings: ControlSwitch, request: Request):
+    from .control import set_enabled
+    _local_control_access(request, write=True)
+    try:
+        set_enabled(settings.enabled)
+    except (OSError, ValueError, __import__('sqlite3').Error):
+        raise HTTPException(503, "Could not save local control settings") from None
+    return snapshot()

@@ -74,7 +74,7 @@ See [Phase 2 dashboard guide](docs/PHASE2_REPORT_FIRST_UX.md) for provenance, fe
 
 ## Old dashboard still displayed?
 
-The report-only dashboard shows revision **adapter-framework-v4** in its header.
+The report-only dashboard shows revision **vscode-integration-v5** in its header.
 Use PowerShell in the intended checkout, not its parent or a nested older clone:
 
 ~~~powershell
@@ -85,7 +85,7 @@ git pull --ff-only origin feature/phase-1-foundation
 py -3.11 scripts/start_atof.py --port 8081
 ~~~
 
-Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=adapter-framework-v4. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
+Open http://127.0.0.1:8081/dashboard. Using a different port avoids the previous server on 8080. The launcher prints the project path, dashboard revision and verified API module path. It refuses an old source file or occupied port rather than terminating unknown processes. Check http://127.0.0.1:8081/health for dashboard_revision=vscode-integration-v5. If the revision is absent, the browser is not reaching the updated server. Stop your own old server with Ctrl+C when convenient. No reset, forced checkout or deletion is needed. If the remote is different, verify the correct repository before pulling.
 
 ## Phase 3 automatic feature detection
 
@@ -98,3 +98,7 @@ Use the same dashboard. ON/OFF persists and applies to updated local HTTP and MC
 ## Phase 5 agent adapter framework
 
 The same Control Center and dashboard now report owned API preparation separately from tests and explicit MCP requests. OpenAI API and Gemini API adapters are for applications that own their model inputs, not browser subscriptions. No extra setup for dashboard monitoring. See [Phase 5 guide](docs/PHASE5_AGENT_ADAPTERS.md) for the SDK and API contract. Existing MCP clients should restart after updating.
+
+## Phase 6 VS Code extension
+
+Start the existing service on 8081. Build/install the VSIX from ide/vscode using the approved VSCE tool. The ATOF status bar opens the same dashboard; ATOF: Toggle Optimization controls the shared switch. ATOF: Ask AI with ATOF uses a separate approved model request, with optional selected editor text. Optional Copilot MCP registration is separate; do not duplicate existing configuration. See [Phase 6 guide](docs/PHASE6_VSCODE_INTEGRATION.md). No normal-chat interception is claimed.

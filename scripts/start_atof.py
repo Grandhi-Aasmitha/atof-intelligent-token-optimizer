@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DASHBOARD_REVISION = "adapter-framework-v4"
+DASHBOARD_REVISION = "vscode-integration-v5"
 
 
 def require_free_port(port):

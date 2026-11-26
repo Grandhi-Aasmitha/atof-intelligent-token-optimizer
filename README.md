@@ -83,3 +83,7 @@ See [integration foundation and acceptance gates](docs/PHASE1_INTEGRATION_FOUNDA
 ## Revised roadmap — Phase 5
 
 [Universal agent adapters](docs/PHASE5_AGENT_ADAPTERS.md). Shared MCP adapters and explicit owned-input preparation for OpenAI/Gemini/custom applications. No native interception or provider savings claim.
+
+## Revised roadmap — Phase 6
+
+[VS Code integration](docs/PHASE6_VSCODE_INTEGRATION.md): status bar, global policy toggle, optional owned model request and opt-in MCP definition. Native agent interception remains unverified.

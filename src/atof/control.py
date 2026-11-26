@@ -61,6 +61,15 @@ def save_settings(settings):
     return settings
 
 
+def set_enabled(enabled):
+    """Change only the global switch, preserving concurrent preference updates."""
+    if type(enabled) is not bool:
+        raise ValueError("Expected a boolean")
+    with closing(_connect(control_path())) as conn, conn:
+        conn.execute("""INSERT INTO control_settings VALUES (1,?,'auto','auto')
+          ON CONFLICT(singleton) DO UPDATE SET enabled=excluded.enabled""", (int(enabled),))
+
+
 def snapshot():
     try:
         settings = read_settings()

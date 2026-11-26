@@ -1,54 +1,147 @@
 'use strict';
 const vscode=require('vscode');
-const http=require('http');
-function api(){
-  const raw=vscode.workspace.getConfiguration('atof').get('apiUrl','http://127.0.0.1:8080');
-  const url=new URL(raw);
-  if(url.protocol!=='http:'||!['127.0.0.1','localhost','[::1]'].includes(url.hostname))
-    throw Error('ATOF supports loopback HTTP only');
-  url.pathname='/v1/ide/optimize';
-  return url;
+const path=require('node:path');
+const fs=require('node:fs');
+const {localOrigin,request}=require('./client');
+const {buildRequest,acceptPrepared,sendOne}=require('./owned');
+const config=()=>vscode.workspace.getConfiguration('atof');
+const origin=()=>localOrigin(config().get('apiUrl','http://127.0.0.1:8081'));
+const api=(route,method,payload,headers)=>request(origin(),route,method,payload,headers);
+const budget=()=>config().get('tokenBudget',1600);
+function trustedLocal() {
+  if (!vscode.workspace.isTrusted || vscode.env.remoteName) throw Error('ATOF requires a trusted local VS Code workspace');
 }
-function send(url,payload){
-  return new Promise((resolve,reject)=>{
-    const body=JSON.stringify(payload);
-    const req=http.request(url,{method:'POST',timeout:12000,headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)}},res=>{
-      let result='';
-      res.setEncoding('utf8');
-      res.on('data',part=>{result+=part;if(result.length>4000000)req.destroy(Error('Response too large'));});
-      res.on('end',()=>{try{if(res.statusCode!==200)throw Error('API returned '+res.statusCode);resolve(JSON.parse(result));}catch(e){reject(e)}});
-    });
-    req.on('timeout',()=>req.destroy(Error('Local ATOF timed out')));
-    req.on('error',reject);
-    req.end(body);
-  });
+function safeError(message) { vscode.window.showErrorMessage('ATOF: '+message); }
+async function dashboard() {
+  try { await vscode.env.openExternal(vscode.Uri.parse(origin()+'/dashboard')); }
+  catch (_) { safeError('Check the configured local service URL.'); }
 }
-async function optimize(){
-  try{
+async function controlStatus(status) {
+  try {
+    const c=await api('/v1/control');
+    status.text=c.available?'$(shield) ATOF '+(c.settings.enabled?'ON':'OFF'):'$(warning) ATOF unavailable';
+    status.tooltip='Local optimization policy only; click for Control Center. AI connection not verified.';
+  } catch (_) {
+    status.text='$(debug-disconnect) ATOF offline';
+    status.tooltip='Start the local ATOF service; click to open Control Center.';
+  }
+}
+async function toggle(status) {
+  try {
+    trustedLocal();
+    const c=await api('/v1/control');
+    if(!c.available) throw Error('Settings unavailable');
+    const updated=await api('/v1/control/enabled','PUT',{enabled:!c.settings.enabled},{'X-ATOF-Control':'1'});
+    if(!updated.available) throw Error('Change unconfirmed');
+    await controlStatus(status);
+    vscode.window.showInformationMessage('ATOF '+(updated.settings.enabled?'enabled':'disabled')+' for supported request paths.');
+  } catch (_) { safeError('Could not change policy. Start ATOF and check the Control Center.'); }
+}
+async function askAI() {
+  try {
+    trustedLocal();
+    if (!vscode.lm?.selectChatModels || !vscode.LanguageModelChatMessage) return safeError('Language Model API unavailable in this VS Code version.');
     const editor=vscode.window.activeTextEditor;
-    if(!editor||editor.selection.isEmpty){vscode.window.showInformationMessage('Select text first');return;}
-    const content=editor.document.getText(editor.selection);
-    const kind=await vscode.window.showQuickPick([{label:'Source',value:'source'},{label:'Error',value:'error'},
-      {label:'Test output',value:'test'},{label:'Diff',value:'diff'}],{placeHolder:'Evidence type'});
-    if(!kind)return;
-    const task=await vscode.window.showInputBox({prompt:'ATOF task',value:'Explain and retain relevant evidence'});
-    if(!task)return;
-    const confirm=await vscode.window.showWarningMessage('Send '+content.length+' characters to local ATOF?',{modal:true},'Optimize');
-    if(confirm!=='Optimize')return;
-    const r=await send(api(),{ide:'vscode',task,text:content,evidence_kind:kind.value,
-      path_label:editor.document.fileName.split(/[\\/]/).pop()||'selection.txt',
-      token_budget:vscode.workspace.getConfiguration('atof').get('tokenBudget',1600)});
-    const x=r.report;
-    const report='ATOF candidate — not automatically sent to AI\nEstimated tokens before: '+x.original_estimated_tokens+
-      '\nAfter: '+x.optimized_estimated_tokens+'\nRemoved: '+x.estimated_reduction_tokens+
-      '\nFeatures: '+x.executed_features.join(', ')+'\nProvider token savings: UNVERIFIED\n\n';
-    const doc=await vscode.workspace.openTextDocument({language:'plaintext',content:report+(r.optimized_context||'[No safe reduction]')});
-    await vscode.window.showTextDocument(doc,{preview:false});
-  }catch(e){vscode.window.showErrorMessage('ATOF: '+e.message);}
+    const text=editor&&!editor.selection.isEmpty?editor.document.getText(editor.selection):'';
+    const task=await vscode.window.showInputBox({prompt:'Ask AI with ATOF (single-turn request)',ignoreFocusOut:true});
+    if (task===undefined || !task.trim()) return;
+    const payload=buildRequest(task,text,budget());
+    // Never select another provider silently; selection is user-initiated and may prompt for consent.
+    const models=await vscode.lm.selectChatModels({vendor:'copilot'});
+    if (!models.length) return safeError('No approved Copilot language model is available.');
+    const picked=await vscode.window.showQuickPick(models.map(model=>({label:model.name||model.id,description:model.family,model})),{placeHolder:'Select an approved model'});
+    if (!picked) return;
+    const permission=await vscode.window.showWarningMessage(
+      'Send this task and '+text.length+' selected characters to the local ATOF service, then to '+picked.label+'? Use only authorized content.',{modal:true},'Continue');
+    if(permission!=='Continue') return;
+    let prompt;
+    try {
+      const result=await api('/v1/adapters/vscode_copilot_model/prepare','POST',payload,{'X-ATOF-Adapter':'1'});
+      prompt=acceptPrepared(result,task,text);
+    } catch (_) {
+      // Do not silently send raw context if the optimizer is unavailable.
+      const bypass=await vscode.window.showWarningMessage('ATOF preparation unavailable. Send the original task and selection without optimization?',{modal:true},'Send original');
+      if(bypass!=='Send original') return;
+      prompt=JSON.stringify({task,evidence:text});
+    }
+    const answer=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'ATOF — waiting for AI response',cancellable:true},async(_,token)=>{
+      if (token.isCancellationRequested) return null;
+      const message=vscode.LanguageModelChatMessage.User(prompt);
+      // Exactly one extension-owned message and one sendRequest invocation.
+      // No second original copy, no model retry, no hidden native-chat interception.
+      return sendOne(picked.model,message,token);
+    });
+    if(answer===null) return;
+    const doc=await vscode.workspace.openTextDocument({language:'markdown',content:answer});
+    await vscode.window.showTextDocument(doc,{preview:true});
+    vscode.window.showInformationMessage('AI response received. View the preparation report in ATOF; provider savings remain unverified.');
+  } catch (_) { safeError('AI request failed or permission was denied. No automatic retry was attempted.'); }
 }
-async function dashboard(){try{const u=api();u.pathname='/dashboard';await vscode.env.openExternal(vscode.Uri.parse(u.toString()));}
-  catch(e){vscode.window.showErrorMessage('ATOF: '+e.message);}}
-function activate(ctx){ctx.subscriptions.push(vscode.commands.registerCommand('atof.optimizeSelection',optimize));
-ctx.subscriptions.push(vscode.commands.registerCommand('atof.openDashboard',dashboard));}
+async function optimizeSelection(){
+  try {
+    trustedLocal();
+    const editor=vscode.window.activeTextEditor;
+    if(!editor||editor.selection.isEmpty) return vscode.window.showInformationMessage('Select text first.');
+    const content=editor.document.getText(editor.selection);
+    const task=await vscode.window.showInputBox({prompt:'Task for local candidate only',value:'Explain the selected content'});
+    if(!task) return;
+    const ok=await vscode.window.showWarningMessage('Send selected text to local ATOF only?',{modal:true},'Optimize');
+    if(ok!=='Optimize') return;
+    const r=await api('/v1/optimize','POST',buildRequest(task,content,budget()));
+    const doc=await vscode.workspace.openTextDocument({language:'plaintext',content:r.optimized_context||content});
+    await vscode.window.showTextDocument(doc,{preview:true});
+  } catch (_) { safeError('Local candidate unavailable. Original editor content was not changed.'); }
+}
+function activate(ctx) {
+  const status=vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,90);
+  status.command='atof.openDashboard';status.text='$(shield) ATOF';status.show();
+  ctx.subscriptions.push(status);
+  let refreshing=false;
+  const refresh=async()=>{if(refreshing)return;refreshing=true;try{await controlStatus(status)}finally{refreshing=false}};
+  const timer=setInterval(refresh,10000);ctx.subscriptions.push({dispose:()=>clearInterval(timer)});refresh();
+  const event=new vscode.EventEmitter();ctx.subscriptions.push(event);
+  const KEY='atof.approvedMcpPython';
+  function approvedPython() {
+    if(!vscode.workspace.isTrusted||vscode.env.remoteName) return undefined;
+    const value=ctx.globalState.get(KEY);
+    if(typeof value!=='string'||!path.isAbsolute(value)) return undefined;
+    try {return fs.statSync(value).isFile()?value:undefined;}catch(_){return undefined;}
+  }
+  if(vscode.lm?.registerMcpServerDefinitionProvider&&vscode.McpStdioServerDefinition){
+    ctx.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('atof.localMcp',{
+      onDidChangeMcpServerDefinitions:event.event,
+      provideMcpServerDefinitions:()=>{
+        const python=approvedPython();if(!python)return [];
+        const server=new vscode.McpStdioServerDefinition('ATOF Copilot (explicit tool)',python,
+          ['-I','-m','atof.mcp_server','--agent','copilot'],
+          {'ATOF_ANALYTICS_ENABLED':'1','ATOF_MCP_SMOKE_TEST':null},'0.8.0');
+        server.cwd=vscode.Uri.file(path.dirname(python));return [server];
+      },
+      resolveMcpServerDefinition:server=>approvedPython()===server.command?server:undefined
+    }));
+  }
+  async function configureCopilot(){
+    try{
+      trustedLocal();
+      if(!vscode.lm?.registerMcpServerDefinitionProvider||!vscode.McpStdioServerDefinition) return safeError('This VS Code version does not support extension MCP definitions.');
+      const selected=await vscode.window.showOpenDialog({canSelectMany:false,canSelectFiles:true,canSelectFolders:false,openLabel:'Select approved ATOF virtual environment Python'});
+      if(!selected?.length||selected[0].scheme!=='file') return;
+      const python=selected[0].fsPath;
+      if(!path.isAbsolute(python)||!/^python(?:3(?:\.\d+)?)?(?:\.exe)?$/i.test(path.basename(python))||!fs.statSync(python).isFile()) return safeError('Select the Python executable from the installed ATOF virtual environment.');
+      const confirmed=await vscode.window.showWarningMessage('Register this local ATOF Python executable for optional Copilot MCP? Do not add it if an ATOF MCP server is already configured. VS Code and organization approvals still apply.\n'+python,{modal:true},'Register');
+      if(confirmed!=='Register')return;
+      await ctx.globalState.update(KEY,python);event.fire();
+      vscode.window.showInformationMessage('ATOF MCP definition registered. Start/approve it in MCP: List Servers. Registration is not proof of a live connection.');
+    }catch(_){safeError('MCP registration was not completed.');}
+  }
+  async function disableCopilot(){
+    await ctx.globalState.update(KEY,undefined);event.fire();
+    vscode.window.showInformationMessage('Extension-provided MCP definition removed. Stop an existing running MCP server through VS Code if needed.');
+  }
+  const commands={'atof.openDashboard':dashboard,'atof.toggleOptimization':()=>toggle(status),
+    'atof.askAI':askAI,'atof.optimizeSelection':optimizeSelection,
+    'atof.configureCopilot':configureCopilot,'atof.disableCopilot':disableCopilot};
+  for(const [id,fn] of Object.entries(commands))ctx.subscriptions.push(vscode.commands.registerCommand(id,fn));
+}
 function deactivate(){}
 module.exports={activate,deactivate};
