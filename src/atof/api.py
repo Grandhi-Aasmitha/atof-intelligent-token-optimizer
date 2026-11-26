@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from .models import OptimizeRequest, OptimizeResponse
 from .registry import FeatureRegistry
 from .service import optimize
@@ -73,3 +73,12 @@ def verification():
     """Run synthetic fixtures; records local metadata only if enabled."""
     from .verify_platform import verify
     return verify()
+
+@app.post('/v1/compare')
+def compare_request(payload: OptimizeRequest):
+    """Matched local evidence comparison; no model calls."""
+    if payload.agent != 'custom_api':
+        raise HTTPException(status_code=400, detail='Live agent comparisons require the actual agent integration')
+    off = applied_response(optimize(payload.model_copy(update={'optimization_enabled':False, 'execute':True})))
+    on = applied_response(optimize(payload.model_copy(update={'optimization_enabled':True, 'execute':True})))
+    return {'off':off, 'on':on, 'measurement':'local_heuristic_estimate', 'provider_savings_verified':False}

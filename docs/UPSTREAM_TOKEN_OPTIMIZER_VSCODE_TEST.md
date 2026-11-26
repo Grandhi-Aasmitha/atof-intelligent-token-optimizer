@@ -26,7 +26,7 @@ The runner invokes upstream \`measure.py benchmark --json\`, which loads the **r
 
 Inspect:
 - VS Code terminal: fixture pass/fail, category names, estimated tokens, actual original/compressed output.
-- \`demo-results/token-optimizer-verification.html\`: feature categories and side-by-side output (open in browser).
+- Import the JSON report below into the unified ATOF dashboard under Benchmark imports. Use --html only if a legacy standalone export is explicitly needed.
 - \`demo-results/token-optimizer-verification.json\`: machine-readable test results.
 
 **Exit codes:** 0 = full success; 1 = genuine fixture or example failure (reports still written); 2 = missing upstream or invalid results.

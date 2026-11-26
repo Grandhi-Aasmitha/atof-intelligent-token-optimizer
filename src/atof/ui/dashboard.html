@@ -1,66 +1,126 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATOF · Token Analytics</title>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATOF · Unified dashboard</title>
 <style>
-:root{font-family:system-ui,Segoe UI,sans-serif;color:#1a3049;background:#f4f7fb}*{box-sizing:border-box}
-body{margin:0}header{background:#132b4a;color:#fff;padding:22px 5%}h1{margin:0;font-size:24px}h2{font-size:17px}
-main{max-width:1200px;margin:auto;padding:22px}section{background:white;padding:20px;border:1px solid #dde6ef;border-radius:12px;margin:16px 0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.metric{border:1px solid #e2e8f0;padding:16px;border-radius:10px}.metric strong{display:block;font-size:26px;margin-top:8px}
-label{display:block;margin:12px 0 5px;font-weight:600;font-size:14px}textarea,input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #aebfd1;font:inherit}
-textarea{height:115px}button{border:0;background:#2763b6;color:white;padding:10px 17px;border-radius:7px;cursor:pointer;margin:10px 6px 5px 0}
-.warning{background:#fff2db;color:#81510b;padding:14px;border-radius:8px}
-.muted{font-size:12px;color:#66758c}.chip{display:inline-block;background:#eaf1fc;color:#224971;border-radius:14px;padding:5px 10px;margin:3px;font-size:12px}
-.track{background:#ebf0f6;height:16px;border-radius:10px;overflow:hidden}.bar{height:100%;background:#2563b8}.bar.after{background:#169877}
-table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;border-bottom:1px solid #e8eef6;padding:10px}table{display:block;overflow:auto}
-@media(max-width:850px){.grid,.metrics{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid,.metrics{grid-template-columns:1fr}}
-</style></head><body><header><h1>ATOF · Optimization Analytics</h1><div>Generic platform · Local dashboard · Agent-aware diagnostics</div></header>
-<main><div class="warning"><b>Measurement boundary:</b> Shown token counts are local estimates, not provider-measured savings. Selecting an agent does not switch your IDE assistant or transparently intercept its model requests. Codex, Copilot and Claude need explicit MCP integration.</div>
-<div class="grid"><section><h2>Test a request</h2>
-<label for="agent">Agent</label><select id="agent"><option value="custom_api">ATOF custom API — can optimize</option><option value="copilot">Copilot — observe-only via HTTP</option><option value="codex">Codex — observe-only via HTTP</option><option value="claude">Claude Code — observe-only via HTTP</option><option value="openai" disabled>ChatGPT / OpenAI API — not connected</option><option value="gemini" disabled>Gemini API — not connected</option></select>
-<label for="task">Prompt/task</label><input id="task" value="Investigate repeated RuntimeError">
-<label for="kind">Evidence type</label><select id="kind"><option value="error_output">Error log</option><option value="test_output">Test log</option><option value="diff">Git diff</option><option value="context">Generic context (repeat encoding)</option><option value="tool_output">Tool output (repeat encoding)</option></select><label for="error">Authorized evidence</label><textarea id="error">heartbeat ok&#10;heartbeat ok&#10;RuntimeError: synthetic error</textarea>
-<label><input id="enabled" type="checkbox" checked style="width:auto"> Enable optimization</label><button id="fixture">Use synthetic fixture</button><button id="analyze">Analyze</button><button id="optimize">Optimize</button>
-<p id="status" class="muted" role="status"></p></section>
-<section><h2>Latest request · estimated before / after</h2>
-<div class="grid"><div><span class="muted">Original tokens</span><div class="metric"><strong id="before">—</strong></div><div class="track"><div class="bar" style="width:100%"></div></div></div>
-<div><span class="muted">Optimized tokens</span><div class="metric"><strong id="after">—</strong></div><div class="track"><div class="bar after" id="afterbar"></div></div></div></div>
-<div class="grid"><div class="metric"><small>Estimated tokens removed</small><strong id="removed">—</strong></div><div class="metric"><small>Estimated reduction</small><strong id="percent">—</strong></div></div>
-<p id="duration" class="muted">Processing time: —</p><p id="fidelity" class="muted">Fidelity / budget: —</p><p id="delivery" class="muted">Delivery: —</p>
-<p class="muted">Provider-verified savings: <b>Unavailable</b></p><h2>Applied features</h2><div id="features"></div></section></div>
-<div class="metrics"><div class="metric"><small>Recorded requests</small><strong id="count">—</strong></div><div class="metric"><small>Candidates returned</small><strong id="candidates">—</strong></div><div class="metric"><small>Estimated tokens removed</small><strong id="saved">—</strong></div><div class="metric"><small>Estimated reduction (weighted)</small><strong id="rate">—</strong></div></div>
-<section><details><summary><b>Developer diagnostics: feature verification</b></summary><p class="muted">Explicit offline tests, separate from normal execution reporting. No model calls; history records both arms if analytics is enabled.</p><button id="verify">Run feature verification</button><p id="verify-status" role="status"></p><table><thead><tr><th>Feature</th><th>Result</th><th>Before → after</th><th>Fidelity</th></tr></thead><tbody id="verify-rows"></tbody></table></details></section><section><h2>Provider ON/OFF benchmark comparison</h2>
-<p class="muted">Paste JSON from the benchmark CLI; your browser displays the comparison without storing it. This is not causal savings proof.</p>
-<label for="benchmark-json">Benchmark JSON</label><textarea id="benchmark-json" placeholder="Paste benchmark CLI output"></textarea><button id="benchmark-view">Compare before / after</button><p class="muted" id="benchmark-result" role="status">No benchmark loaded.</p></section>
-<section><h2>Recent optimization results</h2><p class="muted" id="storage"></p><button id="refresh">Refresh history</button><table><thead><tr><th>Timestamp UTC</th><th>Agent</th><th>Intent</th><th>Applied features</th><th>Estimate before → after</th><th>Delivery</th></tr></thead><tbody id="rows"><tr><td colspan="6">No stored results</td></tr></tbody></table></section>
-</main><script>
-const $=id=>document.getElementById(id),num=x=>x===null||x===undefined?'—':Number(x).toLocaleString();
-const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function j(url,options){const r=await fetch(url,options);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
-async function run(execute){$('status').textContent='Working…';try{
-const data=await j(execute?'/v1/optimize':'/v1/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({task:$('task').value,agent:$('agent').value,[$('kind').value]:$('error').value,optimization_enabled:$('enabled').checked,execute})});
-const r=data.report;$('before').textContent=num(r.original_estimated_tokens);$('after').textContent=num(r.optimized_estimated_tokens);
-$('removed').textContent=num(r.estimated_reduction_tokens);$('percent').textContent=r.estimated_reduction_percent==null?'—':r.estimated_reduction_percent+'%';
-$('afterbar').style.width=r.optimized_estimated_tokens!=null&&r.original_estimated_tokens?Math.min(100,100*r.optimized_estimated_tokens/r.original_estimated_tokens)+'%':'0%';
-$('fidelity').textContent='Fidelity: '+r.fidelity_status+' | Evidence budget: '+r.budget_status;
-$('duration').textContent='Processing time: '+num(r.execution_duration_ms)+' ms';$('delivery').textContent='Delivery: '+r.delivery_status+' (model consumption unverified)';
-$('features').innerHTML=r.executed_features.map(id=>'<span class="chip">'+safe(id)+'</span>').join('')||'No features applied';
-$('status').textContent=data.optimized_context?'Candidate returned; provider tokens saved unknown.':!$('enabled').checked?'Optimization disabled; use original evidence.':execute?'No reducing candidate returned.':'Analysis complete; no execution.';
-await refresh();}catch(e){$('status').textContent='Error: '+e.message}}
-async function refresh(){try{const [s,h]=await Promise.all([j('/v1/analytics/summary'),j('/v1/analytics/history')]);
-$('count').textContent=num(s.total_requests);$('candidates').textContent=num(s.candidate_requests);$('saved').textContent=num(s.estimated_tokens_removed);$('rate').textContent=s.estimated_reduction_percent==null?'—':s.estimated_reduction_percent+'%';
-$('storage').textContent=s.enabled?'Local metadata only; no prompt or evidence stored.':'Analytics disabled; set ATOF_ANALYTICS_ENABLED=1 before starting the server.';
-$('rows').innerHTML=h.records.map(r=>'<tr><td>'+safe(r.timestamp_utc.slice(0,19))+'</td><td>'+safe(r.agent)+'</td><td>'+safe(r.intent)+'</td><td>'+(r.features.filter(f=>f.status==='executed').map(f=>'<span class="chip">'+safe(f.id)+'</span>').join('')||'—')+'</td><td>'+num(r.before_estimate)+' → '+num(r.after_estimate)+'</td><td>'+safe(r.delivery_status)+'</td></tr>').join('')||'<tr><td colspan="6">No stored results</td></tr>';
-}catch(e){$('storage').textContent='Unable to fetch analytics: '+e.message}}
-$('benchmark-view').onclick=()=>{try{
- const r=JSON.parse($('benchmark-json').value),a=r.baseline,b=r.optimized;
- if(r.status!=='completed'||!a||!b||!Number.isFinite(a.input_tokens)||!Number.isFinite(b.input_tokens))throw Error('Invalid benchmark');
- const measured=r.provider_usage_measured===true;
- $('benchmark-result').textContent=(measured?'Provider receipts':'Synthetic estimates')+
- ' | Model: '+(r.model||'unknown')+' | Input before: '+num(a.input_tokens)+' | After: '+num(b.input_tokens)+
- ' | Observed difference: '+(measured?num(a.input_tokens-b.input_tokens):'N/A')+
- ' | Required term check: '+(r.quality_gate_passed?'passed':'failed')+' | Causal savings UNVERIFIED';
-}catch(e){$('benchmark-result').textContent='Benchmark error: '+e.message}};
-$('fixture').onclick=()=>{$('error').value=('heartbeat ok\n').repeat(140)+'RuntimeError: synthetic database connection failed\n'};
-$('verify').onclick=async()=>{const b=$('verify');b.disabled=true;$('verify-status').textContent='Running offline fixtures…';try{const v=await j('/v1/verification',{method:'POST'});$('verify-status').textContent=v.passed+'/'+v.total+' passed — local estimates only';$('verify-rows').innerHTML=v.results.map(r=>'<tr><td>'+safe(r.feature)+'</td><td>'+(r.passed?'PASS':'FAIL')+'</td><td>'+num(r.before)+' → '+num(r.after)+'</td><td>'+safe(r.fidelity)+'</td></tr>').join('');await refresh()}catch(e){$('verify-status').textContent='Verification failed: '+e.message}finally{b.disabled=false}};
-$('optimize').onclick=()=>run(true);$('analyze').onclick=()=>run(false);$('refresh').onclick=refresh;refresh();
+:root{font-family:system-ui,Segoe UI,sans-serif;color:#182b43;background:#f3f6fa;line-height:1.45}
+*{box-sizing:border-box}body{margin:0}header{background:#142c49;color:white;padding:22px max(20px,5vw)}h1{margin:0;font-size:25px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:18px 0 8px}
+main{max-width:1440px;margin:auto;padding:18px}section{background:#fff;border:1px solid #dce4ed;border-radius:12px;padding:18px;margin:14px 0}.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}.split>section{min-width:0}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.metric{border:1px solid #dce4ed;border-radius:9px;padding:12px}.metric strong{display:block;font-size:25px;overflow-wrap:anywhere}.muted,small{color:#5c6d80;font-size:13px}.notice{background:#fdf4df;border:1px solid #ebd8ab;border-radius:8px;padding:12px;margin:8px 0}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0}.toolbar>*{max-width:100%}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,select,textarea{font:inherit;max-width:100%;width:100%;padding:9px;border:1px solid #afbdce;border-radius:6px;background:white;color:#182b43}textarea{min-height:105px;resize:vertical}input[type=checkbox],input[type=file]{width:auto}button{font:inherit;font-size:13px;font-weight:650;cursor:pointer;background:#1d548f;color:white;border:1px solid #1d548f;border-radius:6px;padding:9px 13px}button.secondary{background:white;color:#1d548f}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #91b9ef}
+.track{height:10px;background:#edf1f6;border-radius:6px;overflow:hidden;margin-top:6px}.bar{height:100%;background:#2672bb;width:0}.after{background:#16805d}
+.chip{display:inline-block;border:1px solid #b6dcca;background:#eaf7ef;color:#155e41;border-radius:20px;font-size:12px;padding:4px 9px;margin:2px}.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:7px}.feature{border:1px solid #dfe5ec;border-radius:8px;padding:10px;background:#f9fafb;min-height:75px;font-size:13px}.feature.active{border-color:#39906c;background:#e7f5ed}.feature.planned{color:#687484;background:#f4f5f7}.feature strong{display:block}.feature small{display:block;margin-top:5px}.feature.active small{color:#155e41;font-weight:700}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:9px;border-bottom:1px solid #e1e6ed;text-align:left;vertical-align:top}td{overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f8;padding:10px;max-height:300px;overflow:auto}summary{cursor:pointer;font-weight:650}.status{min-height:20px;color:#465b70}.danger{color:#a52c25}
+@media(max-width:850px){.split{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head><body>
+<header><h1>ATOF · Unified Token Optimization Dashboard</h1><div>One engine · feature catalog · request reports · comparisons</div></header>
+<main>
+<div class="notice"><b>Measurement boundary:</b> ATOF token counts are local estimates, not provider-measured savings. Selecting an agent does not connect, switch or intercept the assistant. Live agents must explicitly invoke an approved integration. ChatGPT Web is not connected.</div>
+<div class="split">
+<section><h2>Test an optimization request</h2>
+<label for="agent">Agent for local test</label><select id="agent"><option value="custom_api">ATOF local API — optimize</option><option value="copilot">Copilot — observe only via HTTP</option><option value="codex">Codex — observe only via HTTP</option><option value="claude">Claude — observe only via HTTP</option><option disabled>ChatGPT Web — not connected</option></select>
+<label for="task">Task / prompt</label><input id="task" value="Diagnose repeated RuntimeError">
+<label for="kind">Authorized evidence type</label><select id="kind"><option value="error_output">Error log</option><option value="test_output">Test log</option><option value="diff">Git diff</option><option value="context">General context</option><option value="tool_output">Tool output</option><option value="files">Source / repository files (JSON array)</option></select>
+<label for="evidence">Evidence (no confidential data)</label><textarea id="evidence"></textarea>
+<label><input type="checkbox" id="enabled" checked> Optimization enabled</label>
+<div class="toolbar"><button class="secondary" id="fixture">Load synthetic example</button><button id="optimize">Run request</button><button id="compare">Compare OFF / ON</button></div>
+<p class="status" id="status" role="status"></p><p class="muted" id="comparison">Comparison runs the same local evidence twice; no AI model calls.</p>
+</section>
+<section><h2>Selected request · applied-only report</h2>
+<p id="selected" class="muted">No request selected</p>
+<div class="metrics"><div class="metric"><small>Original tokens</small><strong id="before">—</strong><div class="track"><div id="beforebar" class="bar"></div></div></div><div class="metric"><small>Optimized tokens</small><strong id="after">—</strong><div class="track"><div id="afterbar" class="bar after"></div></div></div><div class="metric"><small>Estimated tokens saved</small><strong id="removed">—</strong></div><div class="metric"><small>Optimization %</small><strong id="percent">—</strong></div></div>
+<p id="details" class="muted"></p><p class="muted">Provider-verified savings: unavailable</p>
+<h3>Features applied</h3><div id="applied">No features applied</div>
+<details id="candidate-panel" hidden><summary>Optimized candidate (current local request only)</summary><pre id="candidate"></pre></details>
+</section></div>
+<section><h2>All features <small id="catalog-count"></small></h2><p class="muted">Active = actually applied to this selected request. Inactive = implemented but not used. Not implemented = roadmap/catalog item only, not an executable optimizer. The full catalog is not the execution report.</p>
+<div id="catalog" role="status">Loading feature catalog…</div></section>
+<section><h2>Request history and comparison</h2>
+<div class="metrics"><div class="metric"><small>Recorded requests</small><strong id="count">—</strong></div><div class="metric"><small>Reducing candidates</small><strong id="candidates">—</strong></div><div class="metric"><small>Estimated tokens saved (window)</small><strong id="saved">—</strong></div><div class="metric"><small>Weighted reduction</small><strong id="rate">—</strong></div></div>
+<div class="toolbar"><label for="filter">Filter agent</label><select id="filter" style="width:auto"><option value="">All agents</option><option value="custom_api">ATOF API</option><option value="copilot">Copilot</option><option value="codex">Codex</option><option value="claude">Claude</option></select><button class="secondary" id="latest">Follow latest</button><button class="secondary" id="refresh">Refresh</button></div>
+<p id="storage" class="muted"></p><div class="scroll"><table><thead><tr><th>UTC / request ID</th><th>Agent</th><th>Applied features</th><th>Before → after</th><th>Reduction</th><th>Delivery</th><th>View</th></tr></thead><tbody id="rows"></tbody></table></div>
+</section>
+<section><details><summary>Developer diagnostics · verify registered optimizers</summary><p class="muted">Separate synthetic fixture tests; not a live request report. Records both arms when analytics is enabled.</p><button id="verify">Run feature verification</button><p id="verify-status" role="status"></p><div class="scroll"><table><thead><tr><th>Feature</th><th>Result</th><th>Before → after</th><th>Fidelity</th></tr></thead><tbody id="verify-rows"></tbody></table></div></details></section>
+<section><details><summary>Benchmark imports · provider or external upstream</summary><p class="muted">Import the benchmark CLI JSON or the separate upstream token-optimizer-verification.json. Read locally in your browser; not uploaded or stored. External fixture metrics are never mixed into ATOF request totals or catalog activation.</p><label for="benchmark-file">JSON report file</label><input id="benchmark-file" type="file" accept=".json,application/json"><label for="benchmark-json">Or paste report JSON</label><textarea id="benchmark-json"></textarea><button id="benchmark-view">Display comparison</button><p id="benchmark-result" role="status"></p><div id="benchmark-data"></div></details></section>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const num=x=>x==null?'—':Number(x).toLocaleString();
+const pct=x=>x==null?'—':num(x)+'%';
+const el=(tag,txt,cls)=>{const n=document.createElement(tag);if(txt!=null)n.textContent=String(txt);if(cls)n.className=cls;return n};
+const agentName=a=>({custom_api:'ATOF local API',copilot:'GitHub Copilot',codex:'Codex',claude:'Claude'})[a]||a;
+let catalog=[], engines=new Set(), records=[], selected=null, pinned=false, busy=false, refreshing=false;
+async function j(url,options){const r=await fetch(url,options);if(!r.ok)throw Error('HTTP '+r.status);return r.json()}
+const post=(url,body)=>j(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+function chips(node,ids){node.replaceChildren();if(!ids.length){node.textContent='None';return}for(const id of ids){const f=catalog.find(x=>x.id===id);node.append(el('span',f?f.name:id,'chip'))}}
+const groups={core:'A. Core token optimization',intelligent:'B. Intelligent AI optimization',agent:'C. Agentic AI optimization',coding:'D. Coding and development',enterprise:'E. Advanced enterprise',governance:'F. Measurement and governance',advanced:'G. Advanced context engineering'};
+function renderCatalog(){
+ const ids=new Set(selected?.ids||[]);const root=$('catalog');root.replaceChildren();
+ if(!catalog.length){root.textContent='Feature catalog unavailable';return}
+ $('catalog-count').textContent=catalog.length+' total · '+engines.size+' executable · '+ids.size+' applied';
+ const sections=new Map();
+ for(const f of catalog){const group=f.id.split('.')[0];if(!sections.has(group)){root.append(el('h3',groups[group]||group));const grid=el('div',null,'catalog');root.append(grid);sections.set(group,grid)}
+ const active=ids.has(f.id),ready=engines.has(f.id),card=el('div',null,'feature '+(active?'active':ready?'inactive':'planned'));
+ card.append(el('strong',f.name),el('small',active?'Active · applied':ready?'Inactive · not used':'Not implemented · catalog only'));card.title=f.id;sections.get(group).append(card)}
+}
+function fromReport(r,candidate){return {id:r.request_id,agent:r.agent,before:r.original_estimated_tokens,after:r.optimized_estimated_tokens,removed:r.estimated_reduction_tokens,percent:r.estimated_reduction_percent,ids:r.executed_features||[],delivery:r.delivery_status,transport:r.execution_transport,fidelity:r.fidelity_status,duration:r.execution_duration_ms,candidate:candidate||null}}
+function fromHistory(r){return {id:r.request_id,agent:r.agent,before:r.before_estimate,after:r.after_estimate,removed:r.reduction_estimate,percent:r.reduction_pct,ids:r.features.filter(f=>f.status==='executed').map(f=>f.id),delivery:r.delivery_status,transport:r.transport,fidelity:r.fidelity_status,duration:r.duration_ms,candidate:null}}
+function selectReport(r){
+ selected=r;
+ $('selected').textContent=r?agentName(r.agent)+' · '+r.id:'No request selected';
+ $('before').textContent=num(r?.before);$('after').textContent=num(r?.after);$('removed').textContent=num(r?.removed);$('percent').textContent=pct(r?.percent);
+ $('beforebar').style.width=r?.before>0?'100%':'0%';
+ $('afterbar').style.width=r?.after!=null&&r.before>0?Math.min(100,100*r.after/r.before)+'%':'0%';
+ $('details').textContent=r?'Transport: '+r.transport+' | Delivery: '+r.delivery+' | Fidelity: '+r.fidelity+' | Processing: '+num(r.duration)+' ms | Model use unverified'+(r.after==null?' | No optimized candidate; retain original.':''):'';
+ chips($('applied'),r?.ids||[]);
+ $('candidate-panel').hidden=!r?.candidate;$('candidate').textContent=r?.candidate||'';
+ renderCatalog();
+}
+function row(table,values){const tr=el('tr');for(const val of values){const td=el('td');if(val instanceof Node)td.append(val);else td.textContent=val;tr.append(td)}table.append(tr)}
+function renderHistory(){
+ const visible=records.filter(r=>!$('filter').value||r.agent===$('filter').value);
+ const body=$('rows');body.replaceChildren();
+ for(const r of visible){const info=fromHistory(r),feature=el('span');chips(feature,info.ids);const button=el('button','View','secondary');button.onclick=()=>{pinned=true;selectReport(info)};
+ row(body,[r.timestamp_utc+' / '+r.request_id,agentName(r.agent),feature,num(info.before)+' → '+num(info.after),pct(info.percent),r.delivery_status,button])}
+ if(!visible.length)row(body,['No records','','','','','','']);
+ if(!pinned)selectReport(visible.length?fromHistory(visible[0]):null);
+}
+async function refresh(){
+ if(refreshing)return;refreshing=true;
+ try{const [s,h]=await Promise.all([j('/v1/analytics/summary'),j('/v1/analytics/history?limit=200')]);records=h.records;
+ $('count').textContent=num(s.total_requests);$('candidates').textContent=num(s.candidate_requests);$('saved').textContent=num(s.estimated_tokens_removed);$('rate').textContent=pct(s.estimated_reduction_percent);
+ $('storage').textContent=s.enabled?'Latest 200 metadata records across agents; no prompts/evidence stored. Select View or follow latest.':'Analytics disabled; current local reports still work.';
+ renderHistory();
+ }catch(e){$('storage').textContent='History unavailable: '+e.message}finally{refreshing=false}
+}
+async function loadCatalog(){try{const [c,e]=await Promise.all([j('/v1/features'),j('/v1/engines')]);catalog=c.features;engines=new Set(e.engines.map(x=>x.feature_id));renderCatalog();if(selected)chips($('applied'),selected.ids)}catch(e){$('catalog').textContent='Catalog unavailable: '+e.message}}
+function payload(){const p={task:$('task').value,agent:$('agent').value,optimization_enabled:$('enabled').checked};if(!p.task.trim())throw Error('Enter a task');const k=$('kind').value,v=$('evidence').value;if(k==='files'){const fs=JSON.parse(v);if(!Array.isArray(fs))throw Error('Files must be a JSON array of path/content objects');p.files=fs}else p[k]=v;return p}
+function fixture(){const k=$('kind').value;const fixtures={error_output:'heartbeat ok\n'.repeat(150)+'RuntimeError: database unavailable',test_output:'test_ok PASSED\n'.repeat(130)+'test_bad FAILED\nE AssertionError: wrong total\n',diff:'diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1,6 +1,6 @@\n'+' context\n'.repeat(100)+'-old\n+new\n'+' context\n'.repeat(100),context:'Service status: healthy\n'.repeat(100)+'Region: west\n',tool_output:'worker ready\n'.repeat(100)+'ERROR: missing input\n',files:JSON.stringify([{path:'service.py',content:'def subtotal(items):\n    return sum(items)\n\ndef total(items):\n    return subtotal(items)\n'+Array.from({length:100},(_,i)=>'\ndef unrelated_'+i+'(): return '+i+'\n').join('')}],null,2)};
+ const tasks={error_output:'Diagnose repeated RuntimeError',test_output:'Analyze failing tests',diff:'Review changes',context:'Explain supplied context',tool_output:'Inspect tool output',files:'Explain total and dependencies'};
+ $('evidence').value=fixtures[k];$('task').value=tasks[k]}
+async function run(compare){if(busy)return;busy=true;$('optimize').disabled=$('compare').disabled=true;$('status').textContent='Processing local request…';$('comparison').textContent='';
+ try{const p=payload();if(compare&&p.agent!=='custom_api')throw Error('Choose ATOF local API for a controlled comparison. Use actual MCP for live agents.');
+ const result=await post(compare?'/v1/compare':'/v1/optimize',p);
+ const data=compare?result.on:result,r=fromReport(data.report,data.optimized_context);
+ pinned=true;selectReport(r);
+ $('status').textContent=r.candidate?'Reducing candidate returned; provider savings unverified.':!p.optimization_enabled&&!compare?'Optimization disabled; original evidence unchanged.':'No reducing candidate returned. For agent-labelled HTTP requests use explicit MCP.';
+ if(compare){const a=result.off.report,b=result.on.report;const after=b.optimized_estimated_tokens??b.original_estimated_tokens;$('comparison').textContent='Matched local pair: OFF '+num(a.original_estimated_tokens)+' → ON '+num(after)+' | removed '+num(a.original_estimated_tokens-after)+' | OFF '+a.request_id+' | ON '+b.request_id+' | no model calls.'}
+ await refresh();
+ }catch(e){$('status').textContent='Request failed: '+e.message}finally{busy=false;$('optimize').disabled=$('compare').disabled=false}}
+$('fixture').onclick=fixture;$('kind').onchange=fixture;$('optimize').onclick=()=>run(false);$('compare').onclick=()=>run(true);$('refresh').onclick=refresh;$('latest').onclick=()=>{pinned=false;renderHistory();refresh()};$('filter').onchange=()=>{pinned=false;renderHistory()};
+$('verify').onclick=async()=>{const b=$('verify');b.disabled=true;$('verify-status').textContent='Running…';try{const v=await post('/v1/verification',{});$('verify-status').textContent=v.passed+'/'+v.total+' passed; local estimates only';$('verify-rows').replaceChildren();for(const r of v.results)row($('verify-rows'),[r.feature,r.passed?'PASS':'FAIL',num(r.before)+' → '+num(r.after),r.fidelity]);await refresh()}catch(e){$('verify-status').textContent=e.message}finally{b.disabled=false}};
+function finiteCount(n){return Number.isSafeInteger(n)&&n>=0}
+function displayBenchmark(r){
+ const root=$('benchmark-data');root.replaceChildren();
+ if(r.source==='external_upstream_token_optimizer'){
+ const s=r.summary;if(!s||![s.passed,s.total,s.failed,s.before,s.after].every(finiteCount)||s.passed+s.failed!==s.total||!s.categories)throw Error('Invalid upstream summary');
+ $('benchmark-result').textContent='External upstream fixtures (bytes/4 estimates): '+s.passed+'/'+s.total+' passed, '+s.failed+' failed; '+num(s.before)+' → '+num(s.after)+'; removed '+num(s.before-s.after)+'. Not ATOF execution or provider savings.';
+ const table=el('table'),body=el('tbody');table.append(body);row(body,['Category','Passed/total','Before','After']);for(const [name,v] of Object.entries(s.categories)){if(!v||![v.passed,v.total,v.before,v.after].every(finiteCount))throw Error('Invalid category');row(body,[name,v.passed+'/'+v.total,num(v.before),num(v.after)])}root.append(table);
+ const failed=Array.isArray(r.fixtures)?r.fixtures.filter(f=>f.status!=='pass'):[];if(failed.length){root.append(el('h3','Failed fixtures'));for(const f of failed)root.append(el('p',String(f.name)+' — '+String(f.status),'danger'))}
+ if(r.example){root.append(el('h3','Example: '+String(r.example.name)),el('p','Required facts preserved: '+String(r.example.preserved_required)),el('h3','Original'),el('pre',r.example.raw),el('h3','Optimized'),el('pre',r.example.optimized))}
+ }else{
+ const a=r.baseline,b=r.optimized;if(r.status!=='completed'||!a||!b||![a.input_tokens,b.input_tokens,a.output_tokens,b.output_tokens].every(finiteCount))throw Error('Invalid completed benchmark');
+ $('benchmark-result').textContent=(r.provider_usage_measured===true?'Imported provider-receipt observations (not independently verified)':'Synthetic estimates')+' | '+String(r.model||'unknown')+' | input '+num(a.input_tokens)+' → '+num(b.input_tokens)+' | difference '+num(a.input_tokens-b.input_tokens)+' | output '+num(a.output_tokens)+' → '+num(b.output_tokens)+' | required term check '+(r.quality_gate_passed===true?'passed':'not passed')+' | causal savings unverified.';
+ }
+}
+$('benchmark-view').onclick=async()=>{try{const f=$('benchmark-file').files[0];if(f&&f.size>10000000)throw Error('Report exceeds 10 MB');const raw=f?await f.text():$('benchmark-json').value;displayBenchmark(JSON.parse(raw))}catch(e){$('benchmark-data').replaceChildren();$('benchmark-result').textContent='Import failed: '+e.message}};
+fixture();loadCatalog();refresh();setInterval(refresh,5000);
 </script></body></html>

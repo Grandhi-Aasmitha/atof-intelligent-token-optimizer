@@ -2,6 +2,33 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "ATOF: Start unified dashboard",
+      "type": "shell",
+      "command": "py",
+      "args": [
+        "-3.11",
+        "${workspaceFolder}/scripts/start_atof.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ATOF: Setup Copilot and start dashboard",
+      "type": "shell",
+      "command": "py",
+      "args": [
+        "-3.11",
+        "${workspaceFolder}/scripts/start_atof.py",
+        "--copilot"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "ATOF: Verify Upstream Token Optimizer",
       "type": "shell",
       "command": "py",

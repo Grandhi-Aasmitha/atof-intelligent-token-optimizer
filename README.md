@@ -4,22 +4,15 @@ ATOF provides **explicit IDE text optimization** and **controlled A/B provider b
 
 Existing features: 48 registered requirements, seven native optimization strategies, a capability-aware planner, fidelity checks, local dashboard, and explicit MCP tools for Codex/Copilot/Claude.
 
-## Windows developer setup
-
-Run from the existing checkout on the existing branch:
+## Quick start (Windows)
 
 ~~~powershell
-git switch feature/phase-1-foundation
-git pull origin feature/phase-1-foundation
-& .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-& .\.venv\Scripts\python.exe -m pytest -q
-& .\.venv\Scripts\python.exe -m atof.mcp_smoke --agent all
-& .\.venv\Scripts\python.exe -m atof.benchmark_cli --provider synthetic
-& .\.venv\Scripts\python.exe -m uvicorn atof.api:app --host 127.0.0.1 --port 8080
+py -3.11 scripts/start_atof.py
 ~~~
 
-Dashboard: http://127.0.0.1:8080/dashboard
-IDE optimization API: POST /v1/ide/optimize
+For approved Copilot setup use py -3.11 scripts/start_atof.py --copilot. The launcher creates the virtual environment, installs dependencies and starts the single dashboard. Open http://127.0.0.1:8080/dashboard. Use --verify for local validation or --setup-only to skip launch.
+
+See [new user guide](README_ATOF_CONFIGURATION.md) for cloning, use and troubleshooting. The dashboard includes all catalog features, applied-only reports, request history, local OFF/ON comparison, diagnostics and benchmark import.
 
 ## Phase 7 — IDE source integrations
 

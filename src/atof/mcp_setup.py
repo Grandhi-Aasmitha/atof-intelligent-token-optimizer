@@ -15,7 +15,7 @@ def vscode_server(python_path: str, agent: str='copilot') -> dict:
             'args':['-m','atof.mcp_server','--agent',agent]}
 
 
-def write_vscode_config(workspace: str, python_path: str) -> Path:
+def write_vscode_config(workspace: str, python_path: str, *, analytics: bool = False) -> Path:
     root=Path(workspace).expanduser().resolve()
     if not root.is_dir():
         raise FileNotFoundError('Workspace directory does not exist')
@@ -25,8 +25,18 @@ def write_vscode_config(workspace: str, python_path: str) -> Path:
         raise ValueError('Invalid existing MCP server registry')
     config=vscode_server(python_path)
     name='atof-copilot'
-    if name in existing.get('servers',{}) and existing['servers'][name] != config:
-        raise ValueError('Existing ATOF MCP entry differs: review it and remove or rename manually')
+    previous = existing.get('servers',{}).get(name)
+    if previous is not None:
+        if not isinstance(previous,dict) or any(previous.get(k) != v for k,v in config.items()):
+            raise ValueError('Existing ATOF MCP entry differs: review it and remove or rename manually')
+        config = dict(previous)
+    if analytics:
+        env = config.get('env', {})
+        if not isinstance(env,dict):
+            raise ValueError('Existing ATOF MCP env is not an object')
+        if env.get('ATOF_ANALYTICS_ENABLED', '1') != '1':
+            raise ValueError('Existing ATOF analytics is disabled; review the entry explicitly')
+        config['env'] = {**env, 'ATOF_ANALYTICS_ENABLED':'1'}
     existing.setdefault('servers',{})[name]=config
     target.parent.mkdir(parents=True,exist_ok=True)
     # No auto-overwrite on conflicts or malformed files.
@@ -40,12 +50,13 @@ def main(argv=None):
     parser.add_argument('--python',default=sys.executable)
     parser.add_argument('--workspace',default='.')
     parser.add_argument('--write-vscode',action='store_true')
+    parser.add_argument('--analytics',action='store_true',help='Enable local metadata analytics in the generated workspace entry')
     args=parser.parse_args(argv)
     if args.write_vscode:
         if args.agent != 'copilot':
             parser.error('--write-vscode currently supports Copilot only')
         try:
-            print(f'Wrote: {write_vscode_config(args.workspace,args.python)}')
+            print(f'Wrote: {write_vscode_config(args.workspace,args.python,analytics=args.analytics)}')
         except (ValueError,FileNotFoundError,json.JSONDecodeError) as e:
             parser.error(str(e))
     else:

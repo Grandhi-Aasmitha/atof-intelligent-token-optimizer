@@ -8,7 +8,7 @@ Seven registered strategies execute: five existing coding modules, generic conte
 
 Use a company-approved Python 3.11+, Git, VS Code and Copilot Chat installation. Obtain permission to process the chosen evidence. No Codex CLI or external API key is needed for offline validation.
 
-    git clone https://github.com/Sasi7597/atof-intelligent-token-optimizer.git
+    git clone https://github.com/Grandhi-Aasmitha/atof-intelligent-token-optimizer.git
     cd atof-intelligent-token-optimizer
     git switch feature/phase-1-foundation
     py -3.11 -m venv .venv
@@ -55,3 +55,7 @@ The third-party compressor remains independent. This upgrade does not install ho
 Normal HTTP optimization, explicit IDE optimization, MCP `atof_optimize`, console output and analytics history show only accepted, executed optimizers. An analyzed, skipped, rejected, unsupported or disabled feature is not presented as applied. Older stored history is filtered on read; no database deletion or migration is required. If no reducing candidate is accepted, the feature list is empty. Safety and delivery warnings remain separate from feature names.
 
 For explicit diagnostics use `/v1/analyze`, `atof_analyze`, `python -m atof.cli --diagnostics --file examples/sample_request.json`, or the collapsed dashboard developer verification panel. These are planning/test views, not normal execution reports. The planner evaluates registered plugins against the supplied evidence and capabilities; the caller still supplies authorized evidence. No new optimization algorithms were added in this reporting change. Future registered modules require no report-specific changes. File-count eligibility is declared in plugin metadata (`minimum_items`).
+
+## Unified dashboard
+
+Use `py -3.11 scripts/start_atof.py` or `--copilot` for approved workspace configuration. The complete catalog is displayed separately from the applied-only execution report. Import external benchmark JSON into the same dashboard; external results do not contribute to ATOF history. See [user guide](../README_ATOF_CONFIGURATION.md).

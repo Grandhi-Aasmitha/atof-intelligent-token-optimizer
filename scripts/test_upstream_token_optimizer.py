@@ -78,6 +78,7 @@ def main(argv=None):
     parser.add_argument('--upstream',type=Path,default=Path('../token-optimizer'))
     parser.add_argument('--output-dir',type=Path,default=Path('demo-results'))
     parser.add_argument('--fixture',default='git_status_basic')
+    parser.add_argument('--html',action='store_true',help='Optional legacy standalone HTML export')
     args=parser.parse_args(argv)
     root=args.upstream.resolve()
     measure=root/'skills/token-optimizer/scripts/measure.py'
@@ -99,7 +100,8 @@ def main(argv=None):
       'generated_utc':datetime.now(timezone.utc).isoformat(),'summary':summary,
       'example':sample,'fixtures':data['results'],'provider_tokens_saved':None}
     (out/'token-optimizer-verification.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
-    (out/'token-optimizer-verification.html').write_text(html_report(summary,data['results'],sample),encoding='utf-8')
+    if args.html:
+        (out/'token-optimizer-verification.html').write_text(html_report(summary,data['results'],sample),encoding='utf-8')
     print('TOKEN OPTIMIZER: ACTUAL UPSTREAM COMPRESSION')
     print(f"Fixtures: {summary['passed']}/{summary['total']} passed, {summary['failed']} failed")
     print(f"Estimated fixture tokens: {summary['before']:,} -> {summary['after']:,}; removed {summary['removed']:,} ({summary['percent']}%)")
@@ -110,7 +112,9 @@ def main(argv=None):
     for row in data['results']:
         if row.get('status')!='pass':
             print('FAIL: '+row.get('name','unknown')+f" ratio={row.get('ratio')} required={row.get('min_required')}")
-    print('HTML report: '+str(out/'token-optimizer-verification.html'))
+    print('Import JSON into the unified ATOF dashboard: '+str(out/'token-optimizer-verification.json'))
+    if args.html:
+        print('Optional HTML export: '+str(out/'token-optimizer-verification.html'))
     print('Provider tokens saved: UNVERIFIED. No model requests made.')
     return 0 if proc.returncode==0 and not summary['failed'] and sample['passed'] else 1
 
