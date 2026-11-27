@@ -79,7 +79,7 @@ def stage(kind, root=ROOT):
     output.mkdir(parents=True, exist_ok=True)
     require(not any(output.iterdir()), "Artifact staging must be empty")
     if kind == "intellij":
-        source = only((root / "ide/intellij/build/distributions").glob("*.zip"))
+        source = only((root / "ide/intellij/target").glob("*-plugin.zip"))
         verify_intellij(source)
         target = output / "ATOF-IntelliJ.zip"
         shutil.copyfile(source, target)

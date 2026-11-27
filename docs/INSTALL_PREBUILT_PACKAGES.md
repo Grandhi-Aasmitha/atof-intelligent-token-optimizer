@@ -17,7 +17,7 @@ Use one shared local service on port 8081. You can keep using the existing sourc
 ~~~powershell
 py -3.11 scripts/start_atof.py --port 8081
 ~~~
-Open http://127.0.0.1:8081/dashboard. Stop any older process you own on that port before starting the new service. Your normal Java Maven projects are unaffected. Gradle 9.3.1 and JDK 21 run in the IntelliJ CI job only; VSCE and Maven/Tycho run in separate CI jobs. The engine still needs Python. This is not a standalone EXE installer.
+Open http://127.0.0.1:8081/dashboard. Stop any older process you own on that port before starting the new service. Your normal Java Maven projects are unaffected. The IntelliJ CI job uses Maven, JDK 21 and a pinned IntelliJ SDK; VSCE and Maven/Tycho run in separate CI jobs. The engine still needs Python. This is not a standalone EXE installer.
 
 ## Build status
 A push affecting packaging or runtime sources on feature/phase-1-foundation requests an automatic run if Actions are enabled and permitted. Manual workflow dispatch is available once the workflow exists on the default branch. No new branch or PR is needed for the push trigger. Do not assume the files exist until the specific job succeeds and the Artifacts section contains them. If a job fails, inspect its logs; other successful jobs can still produce artifacts. Existing regression CI stays separate. Package builds do not establish live AI compatibility, production acceptance or completion of Phase 10's remaining features.

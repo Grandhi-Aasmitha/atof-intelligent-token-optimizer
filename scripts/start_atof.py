@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DASHBOARD_REVISION = "feature-readiness-v9"
+DASHBOARD_REVISION = "phase13-diagnostics-v10"
 
 
 def require_free_port(port):

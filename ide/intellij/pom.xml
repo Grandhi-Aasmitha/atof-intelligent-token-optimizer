@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dev.atof</groupId><artifactId>atof-intellij</artifactId><version>0.9.1</version>
+  <properties><maven.compiler.release>21</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+  <dependencies>
+    <dependency><groupId>com.google.code.gson</groupId><artifactId>gson</artifactId><version>2.11.0</version></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.11.4</version><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-antrun-plugin</artifactId><version>3.1.0</version>
+      <executions>
+        <execution><id>compile-against-installed-sdk</id><phase>compile</phase><goals><goal>run</goal></goals><configuration><target>
+          <fail unless="idea.home" message="Set -Didea.home to an extracted IntelliJ IDEA 2025.2 SDK directory"/>
+          <available file="${idea.home}/lib" type="dir" property="sdk.present"/>
+          <fail unless="sdk.present" message="IntelliJ SDK lib directory missing"/>
+          <mkdir dir="${project.build.outputDirectory}"/>
+          <javac srcdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" release="21" encoding="UTF-8" includeantruntime="false">
+            <classpath><fileset dir="${idea.home}/lib" includes="**/*.jar"/><path refid="maven.compile.classpath"/></classpath>
+          </javac>
+        </target></configuration></execution>
+        <execution><id>assemble-plugin</id><phase>package</phase><goals><goal>run</goal></goals><configuration><target>
+          <zip destfile="${project.build.directory}/atof-intellij-${project.version}-plugin.zip">
+            <zipfileset file="${project.build.directory}/${project.build.finalName}.jar" prefix="atof-intellij/lib"/>
+            <zipfileset dir="${project.build.directory}/plugin-dependencies" includes="gson-*.jar" prefix="atof-intellij/lib"/>
+          </zip>
+        </target></configuration></execution>
+      </executions>
+    </plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version><executions><execution><id>default-compile</id><phase>none</phase></execution></executions></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId><version>3.8.1</version><executions><execution><id>runtime-libs</id><phase>prepare-package</phase><goals><goal>copy-dependencies</goal></goals><configuration><includeArtifactIds>gson</includeArtifactIds><outputDirectory>${project.build.directory}/plugin-dependencies</outputDirectory></configuration></execution></executions></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version></plugin>
+  </plugins></build>
+</project>

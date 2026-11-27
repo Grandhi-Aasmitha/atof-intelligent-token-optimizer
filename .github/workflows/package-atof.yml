@@ -26,25 +26,19 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
-          cache-disabled: false
+      - name: Download pinned IntelliJ SDK
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/atof-idea"
+          curl --fail --location --retry 3 --retry-delay 15 https://download.jetbrains.com/idea/ideaIC-2025.2.tar.gz -o "$RUNNER_TEMP/atof-idea.tar.gz"
+          tar -xzf "$RUNNER_TEMP/atof-idea.tar.gz" -C "$RUNNER_TEMP/atof-idea" --strip-components=1
+          test -d "$RUNNER_TEMP/atof-idea/lib"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Test and build plugin
+      - name: Test and build plugin with Maven
         working-directory: ide/intellij
-        run: |
-          for attempt in 1 2 3; do
-            if gradle --no-daemon test buildPlugin > gradle-build.log 2>&1; then
-              cat gradle-build.log
-              exit 0
-            fi
-            cat gradle-build.log
-            if ! grep -q 'Received status code 429' gradle-build.log || [ "$attempt" = 3 ]; then exit 1; fi
-            sleep $((attempt * 60))
-          done
+        run: mvn --batch-mode --no-transfer-progress -Didea.home="$RUNNER_TEMP/atof-idea" clean verify
       - name: Validate plugin ZIP and stage artifact
         run: python scripts/package_artifacts.py intellij
       - uses: actions/upload-artifact@v4

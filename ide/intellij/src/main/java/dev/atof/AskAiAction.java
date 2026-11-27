@@ -23,7 +23,7 @@ public final class AskAiAction extends AnAction implements DumbAware {
         if(task==null||task.isBlank())return;
         try{Evidence.validate(task,text);}catch(IllegalArgumentException ex){Messages.showErrorDialog(project,ex.getMessage(),"ATOF");return;}
         int chosen=Messages.showChooseDialog(project,"Select an organization-approved provider API","ATOF",
-            new String[]{"OpenAI API","Gemini API"},"OpenAI API",null);
+            null,new String[]{"OpenAI API","Gemini API"},"OpenAI API");
         if(chosen<0)return;
         ProviderSender.Provider provider=ProviderSender.Provider.values()[chosen];
         String key=System.getenv(provider.key);

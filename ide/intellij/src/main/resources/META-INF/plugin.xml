@@ -1,6 +1,8 @@
 <idea-plugin>
   <id>dev.atof.intellij.selection</id>
   <name>ATOF Control Center</name>
+  <version>0.9.1</version>
+  <idea-version since-build="252" until-build="252.*"/>
   <vendor>ATOF Local</vendor>
   <description>Shared local ATOF controls and explicitly approved plugin-owned model requests. No automatic native AI interception.</description>
   <depends>com.intellij.modules.platform</depends>
