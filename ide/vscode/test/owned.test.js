@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {buildRequest,evidenceSlot,acceptPrepared,sendOne}=require('../owned');
+const {buildRequest,evidenceSlot,acceptPrepared,sendOne,compareInput}=require('../owned');
 const {localOrigin}=require('../client');
 const task='Diagnose error', raw='heartbeat ok\n'.repeat(150)+'RuntimeError: fail';
 function prepared(evidence=raw, after=700, policy='disabled'){
@@ -37,4 +37,15 @@ test('only one message and no retry',async()=>{
 test('local origin policy',()=>{
  assert.equal(localOrigin('http://127.0.0.1:8081'),'http://127.0.0.1:8081');
  for(const u of ['https://localhost:8081','http://example.com','http://user@localhost','http://localhost/path','http://localhost/?x=1'])assert.throws(()=>localOrigin(u));
+});
+
+test('selected model counts both complete user messages without sending either',async()=>{
+ const seen=[];let sends=0;
+ const model={countTokens:async m=>{seen.push(JSON.parse(m.content));return seen.length===1?800:40},sendRequest:()=>{sends++;}};
+ const makeMessage=content=>({content});const reduced=JSON.stringify({task,evidence:'RuntimeError: fail'});
+ assert.deepEqual(await compareInput(model,makeMessage,task,raw,reduced,{}),{before:800,after:40,difference:760});
+ assert.deepEqual(seen,[{task,evidence:raw},{task,evidence:'RuntimeError: fail'}]);assert.equal(sends,0);
+ assert.equal(await compareInput({},makeMessage,task,raw,reduced,{}),null);
+ assert.equal(await compareInput({countTokens:async()=>{throw Error('unavailable')}},makeMessage,task,raw,reduced,{}),null);
+ assert.equal(await compareInput(model,makeMessage,task,raw,reduced,{isCancellationRequested:true}),null);
 });

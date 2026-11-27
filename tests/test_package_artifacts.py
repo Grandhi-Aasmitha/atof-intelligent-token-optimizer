@@ -45,7 +45,7 @@ def test_browser_rejects_permission_escalation(tmp_path):
 
 
 def test_intellij_rejects_source_zip_and_accepts_expected_archive_shape(tmp_path):
-    path=tmp_path/"ide/intellij/build/distributions/plugin.zip"
+    path=tmp_path/"ide/intellij/target/atof-intellij-0.9.1-plugin.zip"
     archive(path,{"src/main/java/Control.java":"source only"})
     with pytest.raises(ValueError,match="plugin JAR not found"):
         pack.stage("intellij",tmp_path)

@@ -12,3 +12,7 @@ For build, use Node.js and an approved installed @vscode/vsce. In this directory
 ## Prebuilt packages (recommended for installation)
 
 Use [the prebuilt package guide](https://github.com/Grandhi-Aasmitha/atof-intelligent-token-optimizer/blob/feature/phase-1-foundation/docs/INSTALL_PREBUILT_PACKAGES.md) and the repository's ATOF installable packages workflow. Download the artifact only after its job succeeds. Local Gradle, Maven and VSCE are not necessary for installing the corresponding prebuilt plugin. The local engine still needs Python. The existing developer build commands are optional for contributors.
+
+## Live owned Copilot token measurement (0.9.2)
+
+Run **ATOF: Ask AI with ATOF** with authorized selected evidence. Select and approve a Copilot language model. The extension requests the selected model's token count for the original and prepared complete user messages before submitting exactly one prepared message. After a response, the notification shows both counts and their difference if the model supports countTokens. The dashboard retains local context estimates and an advisory response receipt. These counts exclude internal system/agent context and are not provider billing receipts. No extra generation is used for counting. Ordinary Copilot native chat remains tool-selected and is not intercepted.

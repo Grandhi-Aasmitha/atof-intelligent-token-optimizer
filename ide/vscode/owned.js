@@ -37,4 +37,15 @@ async function sendOne(model, message, token) {
   }
   return text;
 }
-module.exports={evidenceSlot,buildRequest,acceptPrepared,sendOne};
+// Count the complete explicit user message using the selected model's tokenizer.
+// This is a model-reported count of the message, not billed/provider usage.
+async function compareInput(model, makeMessage, task, original, prepared, token) {
+  if(typeof model.countTokens!=='function'||token?.isCancellationRequested)return null;
+  try {
+    const before=await model.countTokens(makeMessage(JSON.stringify({task,evidence:original})),token);
+    const after=await model.countTokens(makeMessage(prepared),token);
+    if(token?.isCancellationRequested||![before,after].every(v=>Number.isSafeInteger(v)&&v>=0))return null;
+    return {before,after,difference:before-after};
+  } catch (_) { return null; }
+}
+module.exports={evidenceSlot,buildRequest,acceptPrepared,sendOne,compareInput};

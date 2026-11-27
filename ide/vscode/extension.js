@@ -3,7 +3,7 @@ const vscode=require('vscode');
 const path=require('node:path');
 const fs=require('node:fs');
 const {localOrigin,request}=require('./client');
-const {buildRequest,acceptPrepared,sendOne}=require('./owned');
+const {buildRequest,acceptPrepared,sendOne,compareInput}=require('./owned');
 const {readContext,TOOL_NAME}=require('./chat-tool');
 const config=()=>vscode.workspace.getConfiguration('atof');
 const origin=()=>localOrigin(config().get('apiUrl','http://127.0.0.1:8081'));
@@ -68,11 +68,14 @@ async function askAI() {
       if(bypass!=='Send original') return;
       prompt=JSON.stringify({task,evidence:text});
     }
-    let answer;
+    let answer, counts=null;
     const receipt=async outcome=>{if(requestId)try{await api('/v1/integrations/vscode-owned/receipt','POST',{request_id:requestId,outcome},{'X-ATOF-Adapter':'1'});}catch(_){/* advisory only; never retry a model call */}};
     try { answer=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'ATOF — waiting for AI response',cancellable:true},async(_,token)=>{
       if (token.isCancellationRequested) return null;
-      const message=vscode.LanguageModelChatMessage.User(prompt);
+      const makeMessage=value=>vscode.LanguageModelChatMessage.User(value);
+      counts=await compareInput(picked.model,makeMessage,task,text,prompt,token);
+      if(token.isCancellationRequested)return null;
+      const message=makeMessage(prompt);
       // Exactly one extension-owned message and one sendRequest invocation.
       // No second original copy, no model retry, no hidden native-chat interception.
       return sendOne(picked.model,message,token);
@@ -81,7 +84,8 @@ async function askAI() {
     await receipt('model_response_returned');
     const doc=await vscode.workspace.openTextDocument({language:'markdown',content:answer});
     await vscode.window.showTextDocument(doc,{preview:true});
-    vscode.window.showInformationMessage('AI response received. View ATOF for the local request report; provider savings remain unverified.');
+    const measurement=counts?'Selected model user-message tokens: '+counts.before+' → '+counts.after+' (difference '+counts.difference+'). ':'Selected model token count unavailable. ';
+    vscode.window.showInformationMessage('AI response received. '+measurement+'Not billed usage or whole-chat savings. View ATOF for the local request report.');
   } catch (_) { safeError('AI request failed or permission was denied. No automatic retry was attempted.'); }
 }
 async function optimizeSelection(){
