@@ -61,6 +61,10 @@ def present(record):
         "observed_only":"Observed only",
         "not_attempted":"No optimized candidate",
     }.get(delivery, "Delivery unverified")
+    if item.get('client_reported_outcome') == 'model_response_returned':
+        item['delivery_label'] = 'Client reports model response; usage unverified'
+    elif item.get('client_reported_outcome') == 'submission_unconfirmed':
+        item['delivery_label'] = 'Client reports submission unconfirmed'
     if item.get("transport") == "vscode_chat_tool":
         item["source_label"] = "Copilot Chat source tool (model use unverified)"
     return item

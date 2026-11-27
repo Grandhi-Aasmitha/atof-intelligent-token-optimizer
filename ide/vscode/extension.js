@@ -57,27 +57,31 @@ async function askAI() {
     const permission=await vscode.window.showWarningMessage(
       'Send this task and '+text.length+' selected characters to the local ATOF service, then to '+picked.label+'? Use only authorized content.',{modal:true},'Continue');
     if(permission!=='Continue') return;
-    let prompt;
+    let prompt, requestId;
     try {
       const result=await api('/v1/adapters/vscode_copilot_model/prepare','POST',payload,{'X-ATOF-Adapter':'1'});
       prompt=acceptPrepared(result,task,text);
+      requestId=result.report.request_id;
     } catch (_) {
       // Do not silently send raw context if the optimizer is unavailable.
       const bypass=await vscode.window.showWarningMessage('ATOF preparation unavailable. Send the original task and selection without optimization?',{modal:true},'Send original');
       if(bypass!=='Send original') return;
       prompt=JSON.stringify({task,evidence:text});
     }
-    const answer=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'ATOF — waiting for AI response',cancellable:true},async(_,token)=>{
+    let answer;
+    const receipt=async outcome=>{if(requestId)try{await api('/v1/integrations/vscode-owned/receipt','POST',{request_id:requestId,outcome},{'X-ATOF-Adapter':'1'});}catch(_){/* advisory only; never retry a model call */}};
+    try { answer=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'ATOF — waiting for AI response',cancellable:true},async(_,token)=>{
       if (token.isCancellationRequested) return null;
       const message=vscode.LanguageModelChatMessage.User(prompt);
       // Exactly one extension-owned message and one sendRequest invocation.
       // No second original copy, no model retry, no hidden native-chat interception.
       return sendOne(picked.model,message,token);
-    });
-    if(answer===null) return;
+    }); } catch(error) { await receipt('submission_unconfirmed'); throw error; }
+    if(answer===null) { await receipt('submission_unconfirmed'); return; }
+    await receipt('model_response_returned');
     const doc=await vscode.workspace.openTextDocument({language:'markdown',content:answer});
     await vscode.window.showTextDocument(doc,{preview:true});
-    vscode.window.showInformationMessage('AI response received. View the preparation report in ATOF; provider savings remain unverified.');
+    vscode.window.showInformationMessage('AI response received. View ATOF for the local request report; provider savings remain unverified.');
   } catch (_) { safeError('AI request failed or permission was denied. No automatic retry was attempted.'); }
 }
 async function optimizeSelection(){

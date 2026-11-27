@@ -7,7 +7,7 @@ from .service import optimize
 from .reporting import applied_response
 
 app=FastAPI(title='ATOF Phase 8',version='0.8.0')
-DASHBOARD_REVISION = 'feature-readiness-v9'
+DASHBOARD_REVISION = 'phase13-diagnostics-v10'
 NO_CACHE_HEADERS = {'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma':'no-cache', 'Expires':'0',
                     'X-ATOF-Dashboard-Revision':DASHBOARD_REVISION}
@@ -272,3 +272,26 @@ def vscode_chat_optimize(payload: OptimizeRequest, request: Request):
         payload.feature_override is not None or not payload.execute or payload.delivery_mode != "return_payload"):
         raise HTTPException(400, "Expected one authorized source file and a task")
     return optimize(payload.model_copy(update={"agent":"copilot"}), transport="vscode_chat_tool", source_kind="agent_tool")
+
+
+from typing import Literal
+from uuid import UUID
+
+class ClientReceipt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: UUID
+    outcome: Literal["model_response_returned", "submission_unconfirmed"]
+
+@app.post('/v1/integrations/vscode-owned/receipt')
+def vscode_owned_receipt(payload: ClientReceipt, request: Request):
+    """Advisory local client receipt; never upgrades native or provider verification."""
+    _local_control_access(request)
+    if request.headers.get("x-atof-adapter") != "1":
+        raise HTTPException(403, "Explicit local adapter header required")
+    from .analytics import client_receipt
+    try:
+        recorded = client_receipt(str(payload.request_id), payload.outcome)
+    except (OSError, ValueError, __import__('sqlite3').Error):
+        raise HTTPException(503, "Receipt storage unavailable") from None
+    return {"recorded": recorded, "provider_savings_verified": False,
+            "model_consumption_verified": False, "scope": "client_reported_only"}

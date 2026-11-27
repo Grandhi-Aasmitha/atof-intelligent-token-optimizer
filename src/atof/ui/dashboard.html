@@ -23,7 +23,7 @@ label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}input,selec
 <p id="selected" class="muted">Waiting for an AI assistant request</p><p id="source-label" class="muted"></p><strong id="delivery-label" role="status"></strong>
 <div class="metrics"><div class="metric"><small>Original estimated tokens</small><strong id="before">—</strong><div class="track"><div id="beforebar" class="bar"></div></div></div><div class="metric"><small>Optimized estimated tokens</small><strong id="after">—</strong><div class="track"><div id="afterbar" class="bar after"></div></div></div><div class="metric"><small>Estimated tokens saved</small><strong id="removed">—</strong></div><div class="metric"><small>Reduction</small><strong id="percent">—</strong></div></div>
 <p class="muted">Estimated context reduction, not verified provider savings.</p><details><summary>Technical details</summary><p id="details" class="muted"></p></details>
-<h3>Features utilized</h3><div id="applied">No features applied</div>
+<p id="outcome" role="status" class="muted"></p><h3>Features utilized</h3><div id="applied">No features applied</div><details><summary>Feature evaluation and skip reasons</summary><div class="scroll"><table><thead><tr><th>Feature</th><th>State</th><th>Reason</th></tr></thead><tbody id="feature-diagnostics"></tbody></table></div></details>
 </section>
 <section><h2>Feature catalog <small id="catalog-count"></small></h2><details id="feature-panel"><summary>View all 48 features</summary><p class="muted">Used = applied for this report. Text engines, structured candidates and controls have different execution boundaries. Runtime required = not yet executable. Controls are not counted as token-saving transformations.</p><div id="catalog">Loading feature catalog…</div></details></section>
 <section><h2>Request history and comparison</h2>
@@ -56,7 +56,7 @@ function renderCatalog(){
  const card=el('div',null,'feature '+(f.used?'active':f.readiness==='runtime_required'?'planned':'inactive'));
  card.append(el('strong',f.name),el('small',labels[f.state]));if(f.scope)card.append(el('small',f.scope));card.title=f.id;sections.get(group).append(card)}
 }
-function fromHistory(r){return {id:r.request_id,agent:r.agent,before:r.before_estimate,after:r.after_estimate,removed:r.reduction_estimate,percent:r.reduction_pct,ids:r.features.filter(f=>f.status==='executed').map(f=>f.id),delivery:r.delivery_status,transport:r.transport,fidelity:r.fidelity_status,duration:r.duration_ms,candidate:null,source:r.source_label,deliveryLabel:r.delivery_label,skips:r.skip_reasons||[]}}
+function fromHistory(r){return {id:r.request_id,agent:r.agent,before:r.before_estimate,after:r.after_estimate,removed:r.reduction_estimate,percent:r.reduction_pct,ids:r.features.filter(f=>f.status==='executed').map(f=>f.id),delivery:r.delivery_status,transport:r.transport,fidelity:r.fidelity_status,duration:r.duration_ms,candidate:null,source:r.source_label,deliveryLabel:r.delivery_label,skips:r.skip_reasons||[],trace:r.feature_diagnostics,outcome:r.optimization_outcome,receipt:r.client_reported_outcome,policy:r.control_policy}}
 function selectReport(r){
  $('selected').textContent=r?agentName(r.agent):'Waiting for an AI assistant request';
  $('source-label').textContent=r?r.source:'';$('delivery-label').textContent=r?r.deliveryLabel:'';
@@ -64,6 +64,9 @@ function selectReport(r){
  $('beforebar').style.width=r?.before>0?'100%':'0%';
  $('afterbar').style.width=r?.after!=null&&r.before>0?Math.min(100,100*r.after/r.before)+'%':'0%';
  $('details').textContent=r?'Request: '+r.id+' | Transport: '+r.transport+' | Delivery: '+r.delivery+' | Fidelity: '+r.fidelity+' | Processing: '+num(r.duration)+' ms | Model use unverified'+(r.after==null?' | No optimized candidate; retain original.':'')+(r.skips?.length?' | Skip reasons: '+r.skips.map(s=>s.id+': '+s.reason).join('; '):''):'';
+ const outcomes={candidate_generated:'Reducing candidate generated (not proof of model use)',disabled:'Optimization disabled by global switch',request_disabled:'Optimization disabled for this request',settings_unavailable:'Settings unavailable; original retained',no_eligible_evidence_or_strategy:'No eligible evidence or registered strategy',no_accepted_reduction:'No safe reducing candidate accepted; original retained',optimizer_failed:'Optimizer failed; original retained',legacy_diagnostics_unavailable:'Older record; full diagnostics unavailable. Reproduce to collect a trace.'};
+ $('outcome').textContent=r?(outcomes[r.outcome]||'Outcome unavailable')+' · '+(r.receipt==='model_response_returned'?'Client reports model response; provider usage unverified.':r.receipt==='submission_unconfirmed'?'Client reports submission unconfirmed.':'Verified provider metrics unavailable.') : '';
+ const diagnostics=$('feature-diagnostics');diagnostics.replaceChildren();for(const d of (r?.trace||r?.skips||[]))row(diagnostics,[d.id,d.status,d.reason]);if(!diagnostics.children.length)row(diagnostics,['—','—',r?.trace===null?'Full diagnostics unavailable for older record':'No feature decision recorded']);
  chips($('applied'),r?.ids||[]);
  renderCatalog();
 }
