@@ -29,13 +29,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
-          cache-disabled: true
+          cache-disabled: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Test and build plugin
         working-directory: ide/intellij
-        run: gradle --no-daemon test buildPlugin
+        run: |
+          for attempt in 1 2 3; do
+            if gradle --no-daemon test buildPlugin > gradle-build.log 2>&1; then
+              cat gradle-build.log
+              exit 0
+            fi
+            cat gradle-build.log
+            if ! grep -q 'Received status code 429' gradle-build.log || [ "$attempt" = 3 ]; then exit 1; fi
+            sleep $((attempt * 60))
+          done
       - name: Validate plugin ZIP and stage artifact
         run: python scripts/package_artifacts.py intellij
       - uses: actions/upload-artifact@v4

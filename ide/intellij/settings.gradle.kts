@@ -1,2 +1,2 @@
-pluginManagement { repositories { gradlePluginPortal(); mavenCentral() } }
+pluginManagement { repositories { mavenCentral(); gradlePluginPortal() } }
 rootProject.name = "atof-intellij-selection"
