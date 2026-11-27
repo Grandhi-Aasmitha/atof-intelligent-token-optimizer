@@ -267,10 +267,13 @@ def vscode_chat_optimize(payload: OptimizeRequest, request: Request):
     _local_control_access(request)
     if request.headers.get("x-atof-adapter") != "1":
         raise HTTPException(403, "Explicit local adapter header required")
-    if (len(payload.files) != 1 or not payload.files[0].content or
-        any((payload.context, payload.diff, payload.test_output, payload.error_output, payload.tool_output)) or
+    artifacts = [v for v in (payload.diff, payload.test_output, payload.error_output) if v]
+    if (not ((1 <= len(payload.files) <= 8 and all(f.content for f in payload.files) and not artifacts)
+             or (not payload.files and len(artifacts) == 1)) or
+        sum(len(f.content.encode('utf-8')) for f in payload.files) + sum(len(v.encode('utf-8')) for v in artifacts) > 300000 or
+        any((payload.context, payload.tool_output)) or
         payload.feature_override is not None or not payload.execute or payload.delivery_mode != "return_payload"):
-        raise HTTPException(400, "Expected one authorized source file and a task")
+        raise HTTPException(400, "Expected bounded authorized source files or one saved diagnostic artifact")
     return optimize(payload.model_copy(update={"agent":"copilot"}), transport="vscode_chat_tool", source_kind="agent_tool")
 
 
@@ -295,3 +298,31 @@ def vscode_owned_receipt(payload: ClientReceipt, request: Request):
         raise HTTPException(503, "Receipt storage unavailable") from None
     return {"recorded": recorded, "provider_savings_verified": False,
             "model_consumption_verified": False, "scope": "client_reported_only"}
+
+@app.post('/v1/integrations/vscode-native/observe')
+def vscode_native_observe(payload: OptimizeRequest, request: Request):
+    """Prompt event observation only: no prompt replacement or evidence retrieval."""
+    _local_control_access(request)
+    if request.headers.get("x-atof-adapter") != "1":
+        raise HTTPException(403, "Explicit local adapter header required")
+    if any((payload.files,payload.diff,payload.test_output,payload.error_output,payload.context,payload.tool_output)):
+        raise HTTPException(400,"Prompt observation accepts task only")
+    if not snapshot().get("settings",{}).get("enabled") or not snapshot().get("available"):
+        return {"observed":False,"reason":"disabled_or_unavailable"}
+    result=optimize(OptimizeRequest(task=payload.task,agent="copilot",execute=False,delivery_mode="observe_only"),transport="vscode_chat_tool",source_kind="agent_tool",record_metrics=False)
+    result.report.delivery_status="observed_only"
+    from .analytics import record
+    record(result)
+    return {"observed":True,"request_id":result.report.request_id,"intent":result.report.intent,"model_consumption_verified":False}
+
+class NativeReceipt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: UUID
+
+@app.post('/v1/integrations/vscode-native/receipt')
+def vscode_native_receipt(payload: NativeReceipt, request: Request):
+    _local_control_access(request)
+    if request.headers.get("x-atof-adapter") != "1":
+        raise HTTPException(403,"Explicit local adapter header required")
+    from .analytics import native_receipt
+    return {"recorded":native_receipt(str(payload.request_id)),"model_consumption_verified":False,"provider_savings_verified":False}

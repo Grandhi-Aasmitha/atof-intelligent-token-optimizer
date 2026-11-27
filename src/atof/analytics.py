@@ -118,3 +118,13 @@ def summary(limit=200):
       "feature_outcomes":outcomes,"verified_provider_tokens_saved":None,
       "verified_provider_savings_available":False,"measurement_method":"local_heuristic_estimate",
       "note":"Only reducing candidates included. Not provider billed token savings."}
+
+def native_receipt(request_id):
+    """Client prepared accepted tool output; no assertion of model consumption."""
+    path=db_path()
+    if path is None or not path.is_file(): return False
+    with closing(connect(path)) as conn, conn:
+        row=conn.execute("SELECT 1 FROM request_metrics m JOIN request_provenance p USING(request_id) WHERE m.request_id=? AND m.agent='copilot' AND m.transport='vscode_chat_tool' AND p.source_kind='agent_tool' AND m.reduction_estimate>0 AND m.fidelity_status='passed'",(request_id,)).fetchone()
+        if not row: return False
+        conn.execute("INSERT OR IGNORE INTO client_receipts VALUES (?,?)",(request_id,"native_tool_output_prepared"))
+        return True

@@ -12,6 +12,7 @@ test('OFF avoids source and optimization calls; ON returns only accepted evidenc
     let enabled=false,calls=0;
     const args={input:{task:'Explain total',path:'cart.py'},trusted:()=>true,roots:()=>[root],budget:1600,api:async(route,method,payload)=>{
       if(route==='/v1/control')return {available:true,settings:{enabled}};
+      if(route.endsWith('/receipt'))return {recorded:true};
       calls++;assert.equal(payload.files[0].content,'def total(): return 100\n');
       return {optimized_context:'def total(): return 100',report:{agent:'copilot',execution_transport:'vscode_chat_tool',control_policy:'enabled',fidelity_status:'passed',estimated_reduction_tokens:1,executed_features:['test-fixture']}};
     }};

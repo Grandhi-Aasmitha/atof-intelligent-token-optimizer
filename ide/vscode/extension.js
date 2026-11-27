@@ -109,7 +109,7 @@ function activate(ctx) {
   ctx.subscriptions.push(status);
   if(vscode.lm?.registerTool && vscode.LanguageModelToolResult && vscode.LanguageModelTextPart){
     ctx.subscriptions.push(vscode.lm.registerTool(TOOL_NAME,{
-      prepareInvocation(options){return {invocationMessage:'ATOF: read and optimize source',confirmationMessages:{title:'Allow ATOF source retrieval?',message:'Read authorized source in this trusted workspace, send it to local ATOF and return evidence to Copilot: '+String(options.input?.path||'')}};},
+      prepareInvocation(options){return {invocationMessage:'ATOF: read and optimize source',confirmationMessages:{title:'Allow ATOF source retrieval?',message:'Read authorized source in this trusted workspace, send it to local ATOF and return evidence to Copilot: '+String(options.input?.paths?.join(', ')||options.input?.path||'')}};},
       async invoke(options,token){
         const result=await readContext({input:options.input,token,api,budget:budget(),trusted:()=>vscode.workspace.isTrusted&&!vscode.env.remoteName,roots:()=> (vscode.workspace.workspaceFolders||[]).filter(f=>f.uri.scheme==='file').map(f=>f.uri.fsPath)});
         return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(result)]);

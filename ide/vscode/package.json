@@ -2,7 +2,7 @@
   "name": "atof-selection-optimizer",
   "displayName": "ATOF Control Center",
   "description": "Shared local optimization controls and approved VS Code model and MCP integrations",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "publisher": "atof-local",
   "private": true,
   "engines": {
@@ -75,14 +75,13 @@
         "toolReferenceName": "atofContext",
         "canBeReferencedInPrompt": true,
         "when": "atof.optimizationEnabled && isWorkspaceTrusted",
-        "userDescription": "Read one authorized source file through local ATOF.",
-        "modelDescription": "For a targeted explanation or dependency question about an identified source file, prefer this tool before reading the whole file. Pass the actual task and workspace-relative path, never raw contents. If insufficient or unavailable, use normal authorized source tools. Not for edits, secrets or exact full-file review.",
+        "userDescription": "Read and optimize authorized source files or a saved diagnostic artifact.",
+        "modelDescription": "For read-only code explanations, dependency and repository questions, saved build/error/test logs or saved diffs, prefer this tool before reading full evidence. Discover relevant paths with normal authorized workspace search; pass up to eight source paths or one saved artifact and the actual task. Never use for edits or exact full-file reviews. If insufficient, use ordinary authorized tools.",
         "inputSchema": {
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "task",
-            "path"
+            "task"
           ],
           "properties": {
             "task": {
@@ -92,6 +91,25 @@
             "path": {
               "type": "string",
               "description": "Source file path relative to the single trusted local workspace"
+            },
+            "paths": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "type": "string"
+              },
+              "description": "Relevant workspace-relative paths discovered using authorized search"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "source",
+                "error_output",
+                "test_output",
+                "diff"
+              ],
+              "description": "Saved evidence type; default source"
             }
           }
         }
